@@ -1,0 +1,115 @@
+# ==================== BACKEND (Java / Spring Boot / Maven) ====================
+
+# Compilados y empaquetados
+backend/target/
+backend/*.jar
+backend/*.war
+backend/*.ear
+
+# Maven wrapper
+!backend/.mvn/wrapper/maven-wrapper.jar
+!backend/**/src/main/**/target/
+!backend/**/src/test/**/target/
+
+# Logs
+*.log
+logs/
+backend/logs/
+
+# Spring Boot DevTools
+backend/.spring-boot-devtools.properties
+
+# Variables de entorno y secretos
+.env
+.env.*
+!.env.example
+backend/src/main/resources/application-local.properties
+backend/src/main/resources/application-local.yml
+backend/src/main/resources/application-secret*.properties
+backend/src/main/resources/application-secret*.yml
+
+# ==================== FRONTEND (Node.js / React / Vite) ====================
+
+# Dependencias
+frontend/node_modules/
+frontend/.pnp
+frontend/.pnp.js
+
+# Build
+frontend/dist/
+frontend/build/
+frontend/.next/
+frontend/out/
+
+# Variables de entorno
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+
+# Cache
+frontend/.cache/
+frontend/.parcel-cache/
+frontend/.vite/
+
+# Testing
+frontend/coverage/
+
+# ==================== IDEs y editores ====================
+
+# IntelliJ IDEA / Eclipse
+.idea/
+*.iml
+*.iws
+*.ipr
+.classpath
+.project
+.settings/
+.factorypath
+
+# VS Code
+.vscode/
+!.vscode/extensions.json
+
+# Eclipse
+*.launch
+*.prefs
+
+# NetBeans
+nbproject/
+nbbuild/
+nbdist/
+nb-configuration.xml
+
+# ==================== Sistema operativo ====================
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Linux
+*~
+
+# ==================== Misceláneos ====================
+
+# Archivos temporales
+*.tmp
+*.temp
+*.swp
+*.bak
+*.orig
+
+# Archivos de prueba locales
+*.local
+
+# Docker (si se agrega más adelante)
+.docker/
+docker-compose.override.yml
