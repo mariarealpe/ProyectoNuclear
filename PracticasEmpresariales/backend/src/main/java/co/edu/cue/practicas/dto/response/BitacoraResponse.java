@@ -1,3 +1,5 @@
+package co.edu.cue.practicas.dto.response;
+
 import co.edu.cue.practicas.model.entity.BitacoraAuditoria;
 import co.edu.cue.practicas.model.enums.EtiquetaCargo;
 import co.edu.cue.practicas.model.enums.Rol;
