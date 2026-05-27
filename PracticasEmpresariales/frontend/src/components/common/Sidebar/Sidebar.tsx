@@ -1,7 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../../../context/AuthContext'
 import { MENUS_POR_ROL } from '../../../constants/menus'
-import { ROL_LABELS } from '../../../constants/roles'
 
 /**
  * PATRON MEDIATOR — Frontend
@@ -19,39 +18,31 @@ export default function Sidebar() {
     return (
         <aside className="w-64 bg-cue-primary text-white flex flex-col shadow-lg">
             {/* Logo / header */}
-            <div className="p-6 border-b border-blue-800">
-                <h1 className="text-lg font-bold leading-tight">Prácticas Empresariales</h1>
-                <p className="text-blue-300 text-xs mt-1">Univ. Alexander Von Humboldt</p>
-            </div>
-
-            {/* Info usuario */}
-            <div className="px-4 py-3 border-b border-blue-800">
-                <p className="text-sm font-medium truncate">{user.nombre}</p>
-                <span className="text-xs bg-blue-700 px-2 py-0.5 rounded-full mt-1 inline-block">
-          {ROL_LABELS[user.rol]}
-        </span>
-                {user.etiquetaCargo && (
-                    <span className="text-xs text-blue-300 block mt-0.5">
-            {user.etiquetaCargo === 'SECRETARIA' ? 'Secretaría' : 'Coordinación'}
-          </span>
-                )}
+            <div className="p-5 border-b border-blue-800 flex items-center gap-3">
+                <div className="w-8 h-8 bg-cue-accent rounded-md flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                    P
+                </div>
+                <div>
+                    <h1 className="text-sm font-bold leading-tight">Prácticas Empresariales</h1>
+                    <p className="text-blue-300 text-xs">Univ. Alexander Von Humboldt</p>
+                </div>
             </div>
 
             {/* Menú dinámico por rol */}
-            <nav className="flex-1 overflow-y-auto py-4">
+            <nav className="flex-1 overflow-y-auto py-2">
                 {menuItems.map((item) => (
                     <NavLink
                         key={item.id}
                         to={item.ruta}
                         className={({ isActive }) =>
-                            `flex items-center gap-3 px-4 py-3 text-sm transition-colors ${
+                            `flex items-center gap-3 px-4 py-2.5 text-sm transition-colors border-l-4 ${
                                 isActive
-                                    ? 'bg-cue-secondary text-white font-medium'
-                                    : 'text-blue-200 hover:bg-blue-800 hover:text-white'
+                                    ? 'border-cue-accent bg-white/10 text-white font-semibold'
+                                    : 'border-transparent text-blue-200 hover:bg-white/5 hover:text-white'
                             }`
                         }
                     >
-                        <span>{item.icono}</span>
+                        <span className="text-base">{item.icono}</span>
                         <span>{item.label}</span>
                     </NavLink>
                 ))}
@@ -61,7 +52,7 @@ export default function Sidebar() {
             <div className="p-4 border-t border-blue-800">
                 <button
                     onClick={logout}
-                    className="w-full text-sm text-blue-300 hover:text-white transition-colors text-left flex items-center gap-2"
+                    className="w-full text-sm text-blue-300 hover:text-white transition-colors text-left flex items-center gap-2 py-1"
                 >
                     <span>🚪</span> Cerrar sesión
                 </button>

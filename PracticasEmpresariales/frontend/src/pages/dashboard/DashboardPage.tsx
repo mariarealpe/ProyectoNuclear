@@ -33,20 +33,17 @@ export default function DashboardPage() {
 
     return (
         <div className="space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
+            {/* Banner de bienvenida */}
+            <div className="bg-cue-primary text-white rounded-xl px-8 py-6 flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">
-                        {dashboard?.titulo ?? 'Panel de Inicio'}
-                    </h1>
-                    <p className="text-gray-500 text-sm mt-1">
-                        Bienvenido/a, <strong>{user?.nombre}</strong>
-                    </p>
+                    <p className="text-blue-300 text-sm">Bienvenido/a de vuelta,</p>
+                    <h1 className="text-2xl font-bold mt-0.5">{user?.nombre}</h1>
+                    <p className="text-blue-300 text-sm mt-1">{dashboard?.titulo ?? 'Panel de Inicio'}</p>
                 </div>
                 {dashboard?.soloLectura && (
-                    <span className="bg-amber-100 text-amber-800 text-sm font-medium px-4 py-2 rounded-full">
-            Modo lectura — Dirección
-          </span>
+                    <span className="bg-amber-400 text-amber-900 text-sm font-semibold px-4 py-2 rounded-full">
+                        Modo lectura — Dirección
+                    </span>
                 )}
             </div>
 
@@ -56,11 +53,11 @@ export default function DashboardPage() {
                     <button
                         key={seccion.id}
                         onClick={() => navigate(seccion.ruta)}
-                        className="card text-left hover:shadow-md transition-shadow hover:border-cue-accent group cursor-pointer"
+                        className="card text-left hover:shadow-md transition-all hover:-translate-y-0.5 group cursor-pointer"
                     >
                         <div className="flex items-start justify-between">
                             <div>
-                                <h3 className="font-semibold text-gray-800 group-hover:text-cue-primary transition-colors">
+                                <h3 className="font-semibold text-gray-700 group-hover:text-cue-primary transition-colors">
                                     {seccion.titulo}
                                 </h3>
                                 <p className="text-3xl font-bold text-cue-primary mt-3">
@@ -70,7 +67,7 @@ export default function DashboardPage() {
                                     {seccion.contador === 0 ? 'Sin registros aún' : 'registros'}
                                 </p>
                             </div>
-                            <span className="text-gray-300 group-hover:text-cue-accent transition-colors text-lg">→</span>
+                            <span className="text-gray-300 group-hover:text-cue-accent transition-colors text-xl font-light">›</span>
                         </div>
                     </button>
                 ))}
