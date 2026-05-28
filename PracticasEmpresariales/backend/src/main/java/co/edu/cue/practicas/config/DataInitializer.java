@@ -1,6 +1,8 @@
 package co.edu.cue.practicas.config;
 
 import co.edu.cue.practicas.model.entity.Usuario;
+import co.edu.cue.practicas.model.enums.EstadoEstudiante;
+import co.edu.cue.practicas.model.enums.EtiquetaCargo;
 import co.edu.cue.practicas.model.enums.Rol;
 import co.edu.cue.practicas.repository.usuario.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -11,66 +13,104 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 /**
- * Siembra el primer Administrador DTI al arrancar el sistema.
- * Solo crea el usuario si no existe ninguno con ese correo,
- * por lo que es seguro ejecutarlo en cada arranque sin duplicar el usuario.
+ * Siembra el primer Administrador DTI al arrancar el sistema, y además
+ * crea un usuario de PRUEBA por cada rol del enum Rol con contraseña
+ * conocida para facilitar las demos y pruebas manuales.
  *
- * El correo y la contraseña inicial se leen desde application.properties:
- *   app.init.admin.correo    → correo del primer DTI
- *   app.init.admin.password  → contraseña inicial (cámbiala antes de producción)
- *
- * Al arrancar, imprime en consola un aviso visual para que el desarrollador
- * sepa que el usuario fue creado y recuerde cambiar la contraseña.
+ * Los usuarios solo se crean si no existe ninguno con ese correo,
+ * por lo que es seguro ejecutarlo en cada arranque sin duplicarlos.
  */
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 
-    // Acceso a la tabla de usuarios para verificar si el DTI inicial ya existe
     private final UsuarioRepository usuarioRepository;
-
-    // Encripta la contraseña antes de guardarla; nunca se guarda en texto plano
     private final PasswordEncoder passwordEncoder;
 
-    // Correo del administrador DTI inicial, configurable en application.properties
     @Value("${app.init.admin.correo}")
     private String correoDti;
 
-    // Contraseña inicial del DTI, configurable en application.properties
-    // IMPORTANTE: cambiar este valor antes de desplegar en producción
     @Value("${app.init.admin.password}")
     private String passwordDti;
 
-    /**
-     * Se ejecuta automáticamente al iniciar la aplicación (CommandLineRunner).
-     * Crea el usuario DTI inicial solo si no existe ya en la base de datos.
-     * En H2 (perfil de desarrollo) esto se ejecuta en cada arranque porque
-     * la BD se borra y recrea; en PostgreSQL/MySQL solo se ejecuta la primera vez.
-     */
+    /** Contraseña común para todos los usuarios de prueba (no para el DTI). */
+    private static final String PASSWORD_PRUEBA = "Test2026!";
+
     @Override
     public void run(String... args) {
+        crearAdminDtiSiNoExiste();
+        crearUsuariosDePrueba();
+    }
 
-        // Verificamos si ya existe un usuario con el correo configurado
-        // Si existe, no hacemos nada (evitamos duplicados en BD persistentes como PostgreSQL)
-        if (!usuarioRepository.existsByCorreo(correoDti)) {
-            Usuario dti = Usuario.builder()
-                    .nombre("Administrador DTI")
-                    .correo(correoDti)
-                    .passwordHash(passwordEncoder.encode(passwordDti))  // guardamos el hash BCrypt
-                    .rol(Rol.ADMIN_DTI)
-                    .activo(true)
-                    .primerIngreso(false)  // el DTI inicial no necesita cambiar contraseña al entrar
-                    .build();
+    private void crearAdminDtiSiNoExiste() {
+        if (usuarioRepository.existsByCorreo(correoDti)) return;
 
-            usuarioRepository.save(dti);
+        Usuario dti = Usuario.builder()
+                .nombre("Administrador DTI")
+                .correo(correoDti)
+                .passwordHash(passwordEncoder.encode(passwordDti))
+                .rol(Rol.ADMIN_DTI)
+                .activo(true)
+                .primerIngreso(false)
+                .build();
+        usuarioRepository.save(dti);
 
-            // Aviso visible en consola para que el desarrollador sepa que el usuario fue creado
-            log.info("=======================================================");
-            log.info("  USUARIO DTI INICIAL CREADO");
-            log.info("  Correo : {}", correoDti);
-            log.info("  CAMBIA app.init.admin.password EN PRODUCCIÓN");
-            log.info("=======================================================");
+        log.info("=======================================================");
+        log.info("  USUARIO DTI INICIAL CREADO");
+        log.info("  Correo : {}", correoDti);
+        log.info("  CAMBIA app.init.admin.password EN PRODUCCIÓN");
+        log.info("=======================================================");
+    }
+
+    /**
+     * Crea un usuario de prueba por cada rol con contraseña conocida.
+     * primerIngreso=false para que el login lleve directamente al dashboard
+     * sin forzar cambio de contraseña.
+     */
+    private void crearUsuariosDePrueba() {
+        sembrar("coordinacion@cue.edu.co",  "Coordinación Académica (Prueba)",
+                Rol.COORDINACION_ACADEMICA, EtiquetaCargo.COORDINACION_ACADEMICA);
+
+        sembrar("secretaria@cue.edu.co",    "Secretaría Académica (Prueba)",
+                Rol.COORDINACION_ACADEMICA, EtiquetaCargo.SECRETARIA);
+
+        sembrar("coordpracticas@cue.edu.co","Coordinador de Prácticas (Prueba)",
+                Rol.COORDINADOR_PRACTICAS, null);
+
+        sembrar("docente@cue.edu.co",       "Docente Asesor (Prueba)",
+                Rol.DOCENTE_ASESOR, null);
+
+        sembrar("tutor@cue.edu.co",         "Tutor Empresarial (Prueba)",
+                Rol.TUTOR_EMPRESARIAL, null);
+
+        sembrar("estudiante@cue.edu.co",    "Estudiante Practicante (Prueba)",
+                Rol.ESTUDIANTE, null);
+
+        sembrar("direccion@cue.edu.co",     "Dirección (Prueba)",
+                Rol.DIRECCION, null);
+    }
+
+    private void sembrar(String correo, String nombre, Rol rol, EtiquetaCargo etiqueta) {
+        if (usuarioRepository.existsByCorreo(correo)) return;
+
+        Usuario.UsuarioBuilder builder = Usuario.builder()
+                .nombre(nombre)
+                .correo(correo)
+                .passwordHash(passwordEncoder.encode(PASSWORD_PRUEBA))
+                .rol(rol)
+                .etiquetaCargo(etiqueta)
+                .activo(true)
+                .primerIngreso(false);
+
+        if (rol == Rol.ESTUDIANTE) {
+            builder.estadoEstudiante(EstadoEstudiante.APTO)
+                    .creditosAprobados(120)
+                    .promedioAcumulado(4.2);
         }
+
+        usuarioRepository.save(builder.build());
+        log.info("Usuario de prueba creado: {} ({}{})",
+                correo, rol, etiqueta != null ? " / " + etiqueta : "");
     }
 }

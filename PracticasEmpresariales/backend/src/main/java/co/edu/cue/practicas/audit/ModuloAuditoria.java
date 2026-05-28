@@ -29,4 +29,13 @@ public final class ModuloAuditoria {
 
     /** Módulo de gestión de programas académicos: crear, desactivar */
     public static final String PROGRAMAS  = "PROGRAMAS";
+
+    /** Módulo de gestión de empresas: crear, editar, activar, desactivar */
+    public static final String EMPRESAS   = "EMPRESAS";
+
+    /** Módulo de gestión de tutores empresariales: crear, editar, activar, desactivar */
+    public static final String TUTORES_EMPRESARIALES = "TUTORES_EMPRESARIALES";
+
+    /** Módulo de vacantes: crear, editar, aprobar, rechazar, cerrar */
+    public static final String VACANTES   = "VACANTES";
 }
