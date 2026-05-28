@@ -29,6 +29,9 @@ public class UsuarioResponse {
     private Long programaId;
     private String programaNombre;
     private EstadoEstudiante estadoEstudiante;
+    private String motivoNoApto;
+    private int creditosAprobados;
+    private double promedioAcumulado;
 
     public static UsuarioResponse desde(Usuario u) {
         return UsuarioResponse.builder()
@@ -48,6 +51,9 @@ public class UsuarioResponse {
                 .programaId(u.getPrograma() != null ? u.getPrograma().getId() : null)
                 .programaNombre(u.getPrograma() != null ? u.getPrograma().getNombre() : null)
                 .estadoEstudiante(u.getEstadoEstudiante())
+                .motivoNoApto(u.getMotivoNoApto())
+                .creditosAprobados(u.getCreditosAprobados())
+                .promedioAcumulado(u.getPromedioAcumulado())
                 .build();
     }
 }
