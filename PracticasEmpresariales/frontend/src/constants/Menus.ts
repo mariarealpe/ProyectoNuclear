@@ -13,6 +13,9 @@ export const MENUS_POR_ROL: Record<Rol, MenuItem[]> = {
         { id: 'usuarios',   label: 'Gestión de Usuarios', ruta: '/usuarios',   icono: '👥' },
         { id: 'facultades', label: 'Facultades',           ruta: '/facultades', icono: '🏛️' },
         { id: 'programas',  label: 'Programas',            ruta: '/programas',  icono: '📚' },
+        { id: 'empresas',   label: 'Empresas',             ruta: '/empresas',   icono: '🏢' },
+        { id: 'tutores',    label: 'Tutores Empresariales', ruta: '/tutores',   icono: '🤝' },
+        { id: 'vacantes',   label: 'Vacantes',             ruta: '/vacantes',   icono: '💼' },
         { id: 'auditoria',  label: 'Bitácora de Auditoría', ruta: '/auditoria', icono: '📋' },
     ],
     COORDINACION_ACADEMICA: [
@@ -24,6 +27,8 @@ export const MENUS_POR_ROL: Record<Rol, MenuItem[]> = {
     COORDINADOR_PRACTICAS: [
         { id: 'dashboard',   label: 'Panel Principal',      ruta: '/dashboard',  icono: '🏠' },
         { id: 'estudiantes', label: 'Estudiantes APTOS',    ruta: '/estudiantes?estado=APTO', icono: '✅' },
+        { id: 'empresas',    label: 'Empresas',              ruta: '/empresas',   icono: '🏢' },
+        { id: 'tutores',     label: 'Tutores Empresariales', ruta: '/tutores',    icono: '🤝' },
         { id: 'vacantes',    label: 'Vacantes',              ruta: '/vacantes',   icono: '💼' },
         { id: 'asignaciones', label: 'Asignaciones',         ruta: '/asignaciones', icono: '🔗' },
         { id: 'practicas',   label: 'Prácticas Activas',    ruta: '/practicas',  icono: '📊' },
@@ -36,13 +41,15 @@ export const MENUS_POR_ROL: Record<Rol, MenuItem[]> = {
     ],
     TUTOR_EMPRESARIAL: [
         { id: 'dashboard',    label: 'Panel Principal',        ruta: '/dashboard',    icono: '🏠' },
+        { id: 'vacantes',     label: 'Mis Vacantes',           ruta: '/vacantes',     icono: '💼' },
         { id: 'practicantes', label: 'Practicantes a Cargo',   ruta: '/mis-practicantes', icono: '👨‍💼' },
         { id: 'planes',       label: 'Planes de Práctica',     ruta: '/planes',       icono: '📋' },
         { id: 'encuestas',    label: 'Encuestas',              ruta: '/encuestas',    icono: '📊' },
     ],
     ESTUDIANTE: [
         { id: 'dashboard',   label: 'Mi Panel',              ruta: '/dashboard',       icono: '🏠' },
-        { id: 'practica',    label: 'Mi Práctica',           ruta: '/mi-practica',     icono: '💼' },
+        { id: 'vacantes',    label: 'Vacantes Disponibles',  ruta: '/vacantes',        icono: '💼' },
+        { id: 'practica',    label: 'Mi Práctica',           ruta: '/mi-practica',     icono: '🎯' },
         { id: 'seguimiento', label: 'Seguimiento Semanal',   ruta: '/mi-seguimiento',  icono: '📝' },
         { id: 'documentos',  label: 'Mis Documentos',        ruta: '/mis-documentos',  icono: '📁' },
     ],

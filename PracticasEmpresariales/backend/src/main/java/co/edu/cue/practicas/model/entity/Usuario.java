@@ -84,6 +84,16 @@ public class Usuario {
     @Column(name = "motivo_no_apto", length = 500)
     private String motivoNoApto;
 
+    /** Créditos aprobados del estudiante (solo rol ESTUDIANTE). */
+    @Column(name = "creditos_aprobados")
+    @Builder.Default
+    private int creditosAprobados = 0;
+
+    /** Promedio acumulado del estudiante (solo rol ESTUDIANTE). */
+    @Column(name = "promedio_acumulado")
+    @Builder.Default
+    private double promedioAcumulado = 0.0;
+
     @Column(nullable = false, updatable = false)
     @Builder.Default
     private LocalDateTime creadoEn = LocalDateTime.now();

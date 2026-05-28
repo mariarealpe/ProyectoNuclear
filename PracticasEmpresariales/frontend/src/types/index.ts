@@ -116,3 +116,90 @@ export interface Pageable<T> {
     number: number
     size: number
 }
+
+// ============================================================================
+// Gestión Empresarial y Vacantes (Sprint 2 — Persona 2)
+// ============================================================================
+
+export type EstadoVacante = 'PENDIENTE' | 'DISPONIBLE' | 'CERRADA' | 'RECHAZADA'
+
+export type ModalidadVacante = 'PRESENCIAL' | 'REMOTO' | 'HIBRIDO'
+
+export type JornadaVacante = 'TIEMPO_COMPLETO' | 'MEDIO_TIEMPO'
+
+export interface EmpresaResponse {
+    id: number
+    nit: string
+    razonSocial: string
+    nombreComercial?: string
+    sector?: string
+    direccion?: string
+    ciudad?: string
+    correoContacto: string
+    telefono?: string
+    sitioWeb?: string
+    representanteLegal?: string
+    descripcion?: string
+    activo: boolean
+    creadoEn: string
+    actualizadoEn: string
+}
+
+export interface TutorEmpresarialResponse {
+    id: number
+    usuarioId: number
+    nombre: string
+    correo: string
+    telefono?: string
+    empresaId: number
+    empresaRazonSocial: string
+    cargo: string
+    area?: string
+    telefonoCorporativo?: string
+    esResponsablePrincipal: boolean
+    activo: boolean
+    creadoEn: string
+}
+
+export interface VacanteResponse {
+    id: number
+    titulo: string
+    descripcion: string
+    empresaId: number
+    empresaRazonSocial: string
+    empresaNit: string
+    tutorId?: number
+    tutorNombre?: string
+    programaId: number
+    programaNombre: string
+    modalidad: ModalidadVacante
+    jornada: JornadaVacante
+    ciudad?: string
+    cupos: number
+    cuposOcupados: number
+    duracionMeses: number
+    remunerada: boolean
+    valorRemuneracion?: number
+    fechaInicio?: string
+    fechaFin?: string
+    fechaPublicacion: string
+    fechaCierre?: string
+    requisitos?: string
+    responsabilidades?: string
+    estado: EstadoVacante
+    motivoRechazo?: string
+    aprobadorId?: number
+    aprobadorNombre?: string
+    fechaDecision?: string
+}
+
+export interface BitacoraVacanteResponse {
+    id: number
+    vacanteId: number
+    usuarioId?: number
+    usuarioNombre?: string
+    estadoAnterior?: EstadoVacante
+    estadoNuevo: EstadoVacante
+    motivo?: string
+    fechaHora: string
+}

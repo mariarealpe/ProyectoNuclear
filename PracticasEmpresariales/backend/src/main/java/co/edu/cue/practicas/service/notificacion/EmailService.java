@@ -2,6 +2,7 @@ package co.edu.cue.practicas.service.notificacion;
 
 import co.edu.cue.practicas.config.singleton.SystemConfig;
 import co.edu.cue.practicas.model.entity.Usuario;
+import co.edu.cue.practicas.model.entity.Vacante;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -66,5 +67,107 @@ public class EmailService {
     public void notificarNuevoEstudiante(Usuario estudiante) {
         log.info("[EMAIL] Notificación de nuevo estudiante pendiente: {} → Coordinación Académica", estudiante.getNombre());
         // En Sprint 2 se implementa la consulta de coordinadores por facultad para notificarlos
+    }
+
+    /**
+     * Avisa al Coordinador de Prácticas que hay una vacante nueva pendiente de aprobación.
+     * Sprint 2: se loguea; el envío real al coordinador del programa se conecta cuando se
+     * defina la consulta por programa académico.
+     */
+    @Async
+    public void notificarVacantePendiente(Vacante vacante) {
+        log.info("[EMAIL] Vacante pendiente de aprobación: '{}' (empresa: {}, programa: {})",
+                vacante.getTitulo(),
+                vacante.getEmpresa() != null ? vacante.getEmpresa().getRazonSocial() : "?",
+                vacante.getPrograma() != null ? vacante.getPrograma().getNombre() : "?");
+    }
+
+    /**
+     * Notifica a la empresa que su vacante fue aprobada y ya es visible para estudiantes.
+     */
+    @Async
+    public void notificarVacanteAprobada(Vacante vacante, String observacion) {
+        if (vacante.getEmpresa() == null) return;
+        String destinatario = vacante.getEmpresa().getCorreoContacto();
+        if (destinatario == null || destinatario.isBlank()) {
+            log.warn("[EMAIL] Vacante aprobada sin correo de empresa configurado (vacanteId={})", vacante.getId());
+            return;
+        }
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom(systemConfig.getMailFromAddress(), systemConfig.getMailFromName());
+            helper.setTo(destinatario);
+            helper.setSubject("Vacante aprobada — " + systemConfig.getNombreSistema());
+
+            String html = """
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                        <h2 style="color: #276749;">Vacante aprobada</h2>
+                        <p>Estimados <strong>%s</strong>,</p>
+                        <p>Su vacante <strong>%s</strong> ha sido aprobada por la Coordinación de Prácticas
+                           y ya es visible para los estudiantes que cumplan los requisitos.</p>
+                        %s
+                        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;">
+                        <p style="color: #718096; font-size: 12px;">Este es un mensaje automático. No respondas a este correo.</p>
+                    </div>
+                    """.formatted(
+                    vacante.getEmpresa().getRazonSocial(),
+                    vacante.getTitulo(),
+                    (observacion != null && !observacion.isBlank())
+                            ? "<p><strong>Observación del coordinador:</strong> " + observacion + "</p>"
+                            : ""
+            );
+            helper.setText(html, true);
+            mailSender.send(message);
+            log.info("[EMAIL] Notificación de aprobación enviada a: {}", destinatario);
+        } catch (Exception e) {
+            log.error("[EMAIL] Error notificando aprobación de vacante {} a {}: {}",
+                    vacante.getId(), destinatario, e.getMessage());
+        }
+    }
+
+    /**
+     * Notifica a la empresa que su vacante fue rechazada. Incluye el motivo del rechazo
+     * para que la empresa sepa qué corregir antes de reenviarla.
+     */
+    @Async
+    public void notificarVacanteRechazada(Vacante vacante, String motivo) {
+        if (vacante.getEmpresa() == null) return;
+        String destinatario = vacante.getEmpresa().getCorreoContacto();
+        if (destinatario == null || destinatario.isBlank()) {
+            log.warn("[EMAIL] Vacante rechazada sin correo de empresa configurado (vacanteId={})", vacante.getId());
+            return;
+        }
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom(systemConfig.getMailFromAddress(), systemConfig.getMailFromName());
+            helper.setTo(destinatario);
+            helper.setSubject("Vacante rechazada — " + systemConfig.getNombreSistema());
+
+            String html = """
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                        <h2 style="color: #9b2c2c;">Vacante rechazada</h2>
+                        <p>Estimados <strong>%s</strong>,</p>
+                        <p>La vacante <strong>%s</strong> no fue aprobada por la Coordinación de Prácticas.</p>
+                        <div style="background: #fff5f5; border: 1px solid #fed7d7; border-radius: 8px; padding: 16px; margin: 20px 0;">
+                            <p style="margin: 0;"><strong>Motivo:</strong> %s</p>
+                        </div>
+                        <p>Pueden editar la vacante y reenviarla a aprobación desde la plataforma.</p>
+                        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;">
+                        <p style="color: #718096; font-size: 12px;">Este es un mensaje automático. No respondas a este correo.</p>
+                    </div>
+                    """.formatted(
+                    vacante.getEmpresa().getRazonSocial(),
+                    vacante.getTitulo(),
+                    motivo != null ? motivo : "Sin motivo especificado"
+            );
+            helper.setText(html, true);
+            mailSender.send(message);
+            log.info("[EMAIL] Notificación de rechazo enviada a: {}", destinatario);
+        } catch (Exception e) {
+            log.error("[EMAIL] Error notificando rechazo de vacante {} a {}: {}",
+                    vacante.getId(), destinatario, e.getMessage());
+        }
     }
 }
