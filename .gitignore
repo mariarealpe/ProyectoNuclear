@@ -31,3 +31,31 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Node.js / Frontend ###
+PracticasEmpresariales/frontend/node_modules/
+PracticasEmpresariales/frontend/dist/
+PracticasEmpresariales/frontend/.env.local
+PracticasEmpresariales/frontend/.env.*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.tgz
+
+### macOS ###
+.DS_Store
+.AppleDouble
+.LSOverride
+
+### Environment & Local Development ###
+.env
+.env.local
+*.log
+*.pid
+
+### Original Office Documents (converted to .md) ###
+### Uncomment if you want to ignore originals after markdown conversion
+# *.docx
+# *.pdf
+# *.xlsx
+# *.pptx
