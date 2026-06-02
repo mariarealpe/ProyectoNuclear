@@ -39,4 +39,9 @@ export const usuarioService = {
     async activar(id: number): Promise<void> {
         await api.patch(`/usuarios/${id}/activar`)
     },
+
+    /** GPE-136 OCL puedeRestablecerContrasena: DTI puede resetear contraseña de cualquier usuario */
+    async restablecerPassword(id: number): Promise<void> {
+        await api.patch(`/usuarios/${id}/restablecer-password`)
+    },
 }

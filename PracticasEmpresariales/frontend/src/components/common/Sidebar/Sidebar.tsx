@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../../../context/AuthContext'
-import { MENUS_POR_ROL } from '../../../constants/menus'
+import { MENUS_POR_ROL } from '../../../constants/Menus'
 
 /**
  * PATRON MEDIATOR — Frontend

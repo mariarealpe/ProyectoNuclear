@@ -40,6 +40,21 @@ export const empresaService = {
         return res.data.datos!
     },
 
+    /** GPE-150: transición Pendiente → Aprobada */
+    async aprobar(id: number): Promise<void> {
+        await api.patch(`/empresas/${id}/aprobar`)
+    },
+
+    /** GPE-150: transición Pendiente → Rechazada (motivo obligatorio) */
+    async rechazar(id: number, motivo: string): Promise<void> {
+        await api.patch(`/empresas/${id}/rechazar`, { motivo })
+    },
+
+    /** GPE-150: transición Aprobada → Inactiva (no se puede revertir) */
+    async inactivar(id: number): Promise<void> {
+        await api.patch(`/empresas/${id}/desactivar`)
+    },
+
     async desactivar(id: number): Promise<void> {
         await api.patch(`/empresas/${id}/desactivar`)
     },

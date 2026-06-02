@@ -82,7 +82,9 @@ export default function TutoresPage() {
                         onChange={e => setEmpresaFiltro(e.target.value)}
                     >
                         <option value="">— Todas las empresas —</option>
-                        {empresas.map(e => <option key={e.id} value={e.id}>{e.razonSocial}</option>)}
+                        {empresas.filter(e => e.activo).map(e => (
+                            <option key={e.id} value={e.id}>{e.razonSocial}</option>
+                        ))}
                     </select>
                     <button className="btn-primary" onClick={abrirNuevo}>+ Nuevo Tutor</button>
                 </div>

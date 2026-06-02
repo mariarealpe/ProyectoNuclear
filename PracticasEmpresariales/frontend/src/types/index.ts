@@ -46,6 +46,8 @@ export interface UsuarioResponse {
     programaId?: number
     programaNombre?: string
     estadoEstudiante?: EstadoEstudiante
+    promedioAcumulado?: number
+    motivoNoApto?: string
 }
 
 export interface FacultadResponse {
@@ -57,6 +59,15 @@ export interface FacultadResponse {
     creadaEn: string
 }
 
+/** GPE-140: requisitos configurables por número de práctica (Builder). */
+export interface RequisitoPracticaResponse {
+    numeroPractica: number
+    creditosMinimos: number
+    promedioMinimo: number
+    requierePracticaAnterior: boolean
+    documentosRequeridos: string[]
+}
+
 export interface ProgramaResponse {
     id: number
     nombre: string
@@ -65,6 +76,7 @@ export interface ProgramaResponse {
     facultadNombre: string
     numeroTotalPracticas: number
     promedioMinimoGeneral: number
+    requisitosPorPractica: RequisitoPracticaResponse[]
     activo: boolean
     creadoEn: string
 }
@@ -127,6 +139,9 @@ export type ModalidadVacante = 'PRESENCIAL' | 'REMOTO' | 'HIBRIDO'
 
 export type JornadaVacante = 'TIEMPO_COMPLETO' | 'MEDIO_TIEMPO'
 
+/** GPE-150: máquina de estados de empresa — solo avanza, nunca retrocede. */
+export type EstadoEmpresa = 'PENDIENTE' | 'APROBADA' | 'RECHAZADA' | 'INACTIVA'
+
 export interface EmpresaResponse {
     id: number
     nit: string
@@ -140,6 +155,8 @@ export interface EmpresaResponse {
     sitioWeb?: string
     representanteLegal?: string
     descripcion?: string
+    estadoEmpresa: EstadoEmpresa
+    motivoRechazo?: string
     activo: boolean
     creadoEn: string
     actualizadoEn: string
@@ -202,4 +219,96 @@ export interface BitacoraVacanteResponse {
     estadoNuevo: EstadoVacante
     motivo?: string
     fechaHora: string
+}
+
+// ============================================================================
+// Gestión de Estudiantes y Catálogo (Sprint 2 — GPE-141, 143, 145, 146, 147)
+// ============================================================================
+
+export type EstadoPractica =
+    | 'ASIGNADA_PENDIENTE_INICIO'
+    | 'EN_CURSO'
+    | 'FINALIZADA'
+    | 'CANCELADA'
+
+export type EstadoHojaDeVida = 'PENDIENTE' | 'VALIDA' | 'RECHAZADA'
+
+/** Subobjeto versionado: cada carga genera una versión nueva; la anterior persiste. */
+export interface HojaDeVidaResponse {
+    id: number
+    estudianteId: number
+    version: number
+    fechaCarga: string
+    urlArchivo?: string
+    estado: EstadoHojaDeVida
+    validadoPorId?: number
+    nombreValidador?: string
+    fechaValidacion?: string
+}
+
+/** Instancia individual de práctica creada por Prototype desde el catálogo. */
+export interface InstanciaPracticaResponse {
+    id: number
+    estudianteId: number
+    numeroPractica: number
+    nombrePractica: string
+    materiaNucleoNombre: string
+    materiaNucleoCodigo: string
+    estado: EstadoPractica
+    empresaNombre?: string
+    docenteAsesorNombre?: string
+    tutorEmpresarialNombre?: string
+    fechaInicio?: string
+    fechaFin?: string
+    creadaEn: string
+}
+
+export interface EstudianteResponse {
+    id: number
+    usuarioId: number
+    nombre: string
+    identificacion: string
+    correo: string
+    telefono?: string
+    contactoEmergencia?: string
+    programaId: number
+    programaNombre: string
+    facultadId: number
+    facultadNombre: string
+    semestre: number
+    estadoEstudiante: EstadoEstudiante
+    activo: boolean
+    fotoPerfil?: string
+    docenteAsesorId?: number
+    docenteAsesorNombre?: string
+    tutorEmpresarialId?: number
+    tutorEmpresarialNombre?: string
+    requisitosAprobados: boolean
+    estadoHojaDeVida?: EstadoHojaDeVida
+    practicaActualId?: number
+    practicaActualNombre?: string
+    practicaActualEstado?: EstadoPractica
+    /** true cuando CoordAcad ha enviado al proceso → visible para CoordPracticas */
+    enviandoAlProceso: boolean
+    historialPracticas: InstanciaPracticaResponse[]
+    creadoEn: string
+}
+
+/**
+ * Plantilla base del catálogo (Patrón Prototype).
+ * El sistema la clona al marcar un estudiante como APTO.
+ */
+export interface CatalogoPracticaResponse {
+    id: number
+    numeroPractica: number
+    nombre: string
+    materiaNucleoNombre: string
+    materiaNucleoCodigo: string
+    programaId: number
+    programaNombre: string
+    numeroCortesSegumiento: number
+    duracionSemanas: number
+    documentosRequeridos: string[]
+    activo: boolean
+    creadoEn: string
 }
