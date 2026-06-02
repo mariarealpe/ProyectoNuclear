@@ -32,6 +32,9 @@ build/
 ### VS Code ###
 .vscode/
 
+### Claude Code (personal configuration) ###
+.claude/
+
 ### Node.js / Frontend ###
 PracticasEmpresariales/frontend/node_modules/
 PracticasEmpresariales/frontend/dist/
