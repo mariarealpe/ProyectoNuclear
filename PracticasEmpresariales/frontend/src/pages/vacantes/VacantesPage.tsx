@@ -8,6 +8,7 @@ import { tutorService } from '../../services/tutorService'
 import { vacanteService, CrearVacanteRequest } from '../../services/vacanteService'
 import api from '../../services/api'
 import { ApiResponse, Pageable } from '../../types'
+import { useAuth } from '../../context/AuthContext'
 
 const ETIQUETAS_ESTADO: Record<EstadoVacante, string> = {
     PENDIENTE: 'Pendiente',
@@ -30,10 +31,14 @@ const CLASES_ESTADO: Record<EstadoVacante, string> = {
  * flujo de aprobación (State) en una sola página con tabs por estado.
  */
 export default function VacantesPage() {
+    const { user } = useAuth()
+    const puedeCrear = user?.rol === 'ADMIN_DTI' || user?.rol === 'COORDINADOR_PRACTICAS'
+
     const [vacantes, setVacantes] = useState<VacanteResponse[]>([])
     const [empresas, setEmpresas] = useState<EmpresaResponse[]>([])
     const [programas, setProgramas] = useState<ProgramaResponse[]>([])
     const [tutores, setTutores] = useState<TutorEmpresarialResponse[]>([])
+    const [cargandoTutores, setCargandoTutores] = useState(false)
     const [loading, setLoading] = useState(true)
     const [estadoFiltro, setEstadoFiltro] = useState<EstadoVacante | ''>('')
     const [modal, setModal] = useState(false)
@@ -72,7 +77,10 @@ export default function VacantesPage() {
     // Cuando cambia la empresa seleccionada, recargamos sus tutores activos.
     useEffect(() => {
         if (form.empresaId) {
-            tutorService.listar(0, 50, form.empresaId).then(pg => setTutores(pg.content ?? []))
+            setCargandoTutores(true)
+            tutorService.listar(0, 50, form.empresaId)
+                .then(pg => setTutores(pg.content ?? []))
+                .finally(() => setCargandoTutores(false))
         } else {
             setTutores([])
         }
@@ -100,8 +108,12 @@ export default function VacantesPage() {
             setModal(false)
             cargar()
         } catch (err: unknown) {
-            const msg = (err as { response?: { data?: { mensaje?: string } } })?.response?.data?.mensaje
-            setError(msg ?? 'No se pudo registrar la vacante.')
+            type ErrShape = { response?: { data?: { mensaje?: string; datos?: Record<string, string> } } }
+            const data = (err as ErrShape)?.response?.data
+            const camposError = data?.datos && typeof data.datos === 'object'
+                ? Object.values(data.datos).join(' • ')
+                : null
+            setError(camposError ?? data?.mensaje ?? 'No se pudo registrar la vacante.')
         }
     }
 
@@ -136,7 +148,9 @@ export default function VacantesPage() {
                     <h1 className="text-2xl font-bold text-gray-900">Vacantes de Práctica</h1>
                     <p className="text-sm text-gray-500">Flujo de aprobación: las vacantes se publican una vez el Coordinador de Prácticas las aprueba.</p>
                 </div>
-                <button className="btn-primary" onClick={abrirNuevo}>+ Nueva Vacante</button>
+                {puedeCrear && (
+                    <button className="btn-primary" onClick={abrirNuevo}>+ Nueva Vacante</button>
+                )}
             </div>
 
             {/* Filtro por estado */}
@@ -224,7 +238,6 @@ export default function VacantesPage() {
                         <p className="text-xs text-gray-500 mb-4">
                             Patrón Builder: la vacante se construye paso a paso y queda en estado PENDIENTE hasta aprobación.
                         </p>
-                        {error && <div className="bg-red-50 text-red-700 rounded-lg px-4 py-3 text-sm mb-4">{error}</div>}
                         <form onSubmit={crear} className="grid grid-cols-2 gap-4">
                             <div className="col-span-2">
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Título *</label>
@@ -258,12 +271,27 @@ export default function VacantesPage() {
                                 </select>
                             </div>
                             <div className="col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Tutor empresarial (opcional)</label>
-                                <select className="input-field" value={form.tutorId ?? ''}
-                                        onChange={e => setForm({ ...form, tutorId: e.target.value ? Number(e.target.value) : undefined })}>
-                                    <option value="">— Sin asignar —</option>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Tutor empresarial (opcional)
+                                    {cargandoTutores && <span className="ml-2 text-xs text-gray-400">Cargando...</span>}
+                                </label>
+                                <select
+                                    className="input-field"
+                                    value={form.tutorId ?? ''}
+                                    disabled={!form.empresaId || cargandoTutores}
+                                    onChange={e => setForm({ ...form, tutorId: e.target.value ? Number(e.target.value) : undefined })}
+                                >
+                                    <option value="">
+                                        {!form.empresaId
+                                            ? '— Selecciona una empresa primero —'
+                                            : cargandoTutores
+                                            ? 'Cargando tutores...'
+                                            : tutores.filter(t => t.activo).length === 0
+                                            ? '— Sin tutores activos para esta empresa —'
+                                            : '— Sin asignar —'}
+                                    </option>
                                     {tutores.filter(t => t.activo).map(t => (
-                                        <option key={t.id} value={t.id}>{t.nombre} ({t.cargo})</option>
+                                        <option key={t.id} value={t.id}>{t.nombre} — {t.cargo}</option>
                                     ))}
                                 </select>
                             </div>
@@ -339,6 +367,11 @@ export default function VacantesPage() {
                                           onChange={e => setForm({ ...form, responsabilidades: e.target.value })} />
                             </div>
 
+                            {error && (
+                                <div className="col-span-2 bg-red-50 text-red-700 border border-red-200 rounded-lg px-4 py-3 text-sm">
+                                    {error}
+                                </div>
+                            )}
                             <div className="col-span-2 flex gap-3 pt-2">
                                 <button type="button" className="btn-secondary flex-1" onClick={() => setModal(false)}>Cancelar</button>
                                 <button type="submit" className="btn-primary flex-1">Registrar Vacante</button>

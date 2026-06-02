@@ -115,15 +115,10 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- ── DRIVER H2 (base de datos embebida para desarrollo) ───── -->
-        <!--
-             H2 se activa por defecto (spring.profiles.active=h2).
-             No requiere instalación externa. Los datos se pierden al reiniciar.
-             Para cambiar de motor: ver los perfiles Maven al final del archivo.
-        -->
+        <!-- ── DRIVER MySQL (activo permanentemente — ya no usamos H2) ── -->
         <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
             <scope>runtime</scope>
         </dependency>
 

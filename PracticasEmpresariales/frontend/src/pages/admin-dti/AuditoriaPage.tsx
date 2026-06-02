@@ -43,15 +43,48 @@ export default function AuditoriaPage() {
             .finally(() => setLoading(false))
     }
 
+    /** GPE-139: exportar bitácora como CSV con los filtros actuales */
+    const exportarCSV = () => {
+        const headers = ['ID', 'Fecha/Hora', 'Usuario', 'Rol', 'Cargo', 'Módulo', 'Acción', 'Exitoso', 'IP']
+        const filas = entradas.map(e => [
+            String(e.id),
+            new Date(e.fechaHora).toLocaleString('es-CO'),
+            e.nombreUsuario,
+            e.rolUsuario,
+            e.etiquetaCargoUsuario ?? '',
+            e.modulo,
+            e.tipoAccion,
+            e.exitoso ? 'Sí' : 'No',
+            e.ipOrigen ?? '',
+        ])
+        const csv = [headers, ...filas]
+            .map(row => row.map(cell => `"${cell.replace(/"/g, '""')}"`).join(','))
+            .join('\n')
+        const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `auditoria_${new Date().toISOString().split('T')[0]}.csv`
+        a.click()
+        URL.revokeObjectURL(url)
+    }
+
     useEffect(() => { cargar() }, [])
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-3">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">Bitácora de Auditoría</h1>
-                    <p className="text-sm text-gray-500 mt-1">Solo lectura — No se puede modificar ni eliminar ninguna entrada</p>
+                    <p className="text-sm text-gray-500 mt-1">Solo lectura — inmutable, no se puede modificar ni eliminar.</p>
                 </div>
+                <button
+                    className="btn-secondary"
+                    disabled={entradas.length === 0}
+                    onClick={exportarCSV}
+                >
+                    ↓ Exportar CSV ({entradas.length})
+                </button>
             </div>
 
             {/* Filtros */}
