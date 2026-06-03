@@ -23,7 +23,7 @@ public interface NotificacionHistorialRepository extends JpaRepository<Notificac
     /**
      * Obtiene historial de notificaciones de un usuario, más recientes primero.
      */
-    Page<NotificacionHistorial> findByUsuarioDestino_IdOrderByCreatedEnDesc(
+    Page<NotificacionHistorial> findByUsuarioDestino_IdOrderByCreadoEnDesc(
             Long usuarioId,
             Pageable pageable
     );
@@ -59,12 +59,12 @@ public interface NotificacionHistorialRepository extends JpaRepository<Notificac
     /**
      * Obtiene notificaciones de una asignación.
      */
-    List<NotificacionHistorial> findByAsignacion_IdOrderByCreatedEnDesc(Long asignacionId);
+    List<NotificacionHistorial> findByAsignacion_IdOrderByCreadoEnDesc(Long asignacionId);
 
     /**
      * Obtiene notificaciones de una práctica.
      */
-    List<NotificacionHistorial> findByPractica_IdOrderByCreatedEnDesc(Long practicaId);
+    List<NotificacionHistorial> findByPractica_IdOrderByCreadoEnDesc(Long practicaId);
 
     /**
      * Verifica cuántas notificaciones FALLIDO requieren reintento.

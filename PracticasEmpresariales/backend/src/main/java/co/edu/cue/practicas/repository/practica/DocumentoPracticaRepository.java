@@ -36,5 +36,4 @@ public interface DocumentoPracticaRepository extends JpaRepository<DocumentoPrac
     /**
      * Obtiene el documento convenio de una práctica.
      */
-    DocumentoPractica findByPractica_IdAndTipo(Long practicaId, TipoDocumento convenio);
 }

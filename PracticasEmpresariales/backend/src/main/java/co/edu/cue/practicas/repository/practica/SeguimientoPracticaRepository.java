@@ -32,7 +32,7 @@ public interface SeguimientoPracticaRepository extends JpaRepository<Seguimiento
     /**
      * Obtiene seguimientos pendientes de revisión por un docente.
      */
-    Page<SeguimientoPractica> findByDocente_IdAndEstado(
+    Page<SeguimientoPractica> findByDocenteAsesor_IdAndEstado(
             Long docenteId,
             EstadoSeguimiento estado,
             Pageable pageable
@@ -67,15 +67,6 @@ public interface SeguimientoPracticaRepository extends JpaRepository<Seguimiento
     boolean existsRechazadoEnSemanaReciente(
             @Param("practicaId") Long practicaId,
             @Param("estado") EstadoSeguimiento estado
-    );
-
-    /**
-     * Obtiene seguimientos PENDIENTE por docente (paginado).
-     */
-    Page<SeguimientoPractica> findByDocenteAsesor_IdAndEstado(
-            Long docenteId,
-            EstadoSeguimiento estado,
-            Pageable pageable
     );
 
     /**

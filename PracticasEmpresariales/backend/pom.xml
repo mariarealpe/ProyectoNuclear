@@ -32,6 +32,7 @@
          ================================================================ -->
     <properties>
         <java.version>21</java.version>
+        <lombok.version>1.18.36</lombok.version>
         <!-- jjwt: librería para generación y validación de tokens JWT -->
         <jjwt.version>0.12.3</jjwt.version>
     </properties>

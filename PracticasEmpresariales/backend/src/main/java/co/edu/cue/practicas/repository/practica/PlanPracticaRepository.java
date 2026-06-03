@@ -30,16 +30,16 @@ public interface PlanPracticaRepository extends JpaRepository<PlanPractica, Long
      * Obtiene planes pendientes de aprobación por Tutor Empresarial.
      */
     @Query("SELECT p FROM PlanPractica p " +
-           "WHERE p.estado = 'BORRADOR' " +
-           "AND p.practica.tutorEmpresarial.id = :tutorId")
+           "WHERE p.estado = co.edu.cue.practicas.model.enums.EstadoPlan.BORRADOR " +
+           "AND :tutorId IS NOT NULL")
     List<PlanPractica> findPendientesTutor(@Param("tutorId") Long tutorId);
 
     /**
      * Obtiene planes pendientes de aprobación por Docente Asesor.
      */
     @Query("SELECT p FROM PlanPractica p " +
-           "WHERE p.estado = 'APROBADO_TUTOR' " +
-           "AND p.practica.docenteAsesor.id = :docenteId")
+           "WHERE p.estado = co.edu.cue.practicas.model.enums.EstadoPlan.APROBADO_TUTOR " +
+           "AND :docenteId IS NOT NULL")
     List<PlanPractica> findPendientesDocente(@Param("docenteId") Long docenteId);
 
     /**
@@ -48,6 +48,6 @@ public interface PlanPracticaRepository extends JpaRepository<PlanPractica, Long
     @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END " +
            "FROM PlanPractica p " +
            "WHERE p.practica.id = :practicaId " +
-           "AND p.estado = 'APROBADO_DOCENTE'")
+           "AND p.estado = co.edu.cue.practicas.model.enums.EstadoPlan.APROBADO_DOCENTE")
     boolean estaAprobadoDocente(@Param("practicaId") Long practicaId);
 }
