@@ -54,6 +54,41 @@ public class ConfiguracionPrograma {
     private Boolean notificacionesAutomaticas = true;
 
     /**
+     * Nota mínima para aprobar una práctica.
+     */
+    @Column(name = "nota_minima_aprobacion", nullable = false)
+    @Builder.Default
+    private Double notaMinimaAprobacion = 3.0;
+
+    /**
+     * Nota máxima permitida en las evaluaciones del programa.
+     */
+    @Column(name = "nota_maxima", nullable = false)
+    @Builder.Default
+    private Double notaMaxima = 5.0;
+
+    /**
+     * Número total de prácticas definido para el programa.
+     * Si es null, se usa el valor del programa asociado.
+     */
+    @Column(name = "numero_total_practicas")
+    private Integer numeroTotalPracticas;
+
+    /**
+     * Número de cortes académicos usados para evaluar la práctica.
+     */
+    @Column(name = "numero_cortes", nullable = false)
+    @Builder.Default
+    private Integer numeroCortes = 3;
+
+    /**
+     * Máximo de asignaciones activas que puede tener un estudiante simultáneamente.
+     */
+    @Column(name = "maximo_asignaciones_simultaneas", nullable = false)
+    @Builder.Default
+    private Integer maximoAsignacionesSimultaneas = 1;
+
+    /**
      * Plantilla HTML de correo para asignación creada.
      * Puede usar placeholders: {nombreEstudiante}, {nombreVacante}, etc.
      */
