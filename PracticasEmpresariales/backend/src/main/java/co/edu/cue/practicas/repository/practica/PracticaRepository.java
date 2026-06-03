@@ -23,4 +23,16 @@ public interface PracticaRepository extends JpaRepository<Practica, Long> {
             @Param("estado") EstadoPractica estado);
 
     List<Practica> findByEstudiante_IdOrderByCreadoEnDesc(Long estudianteId);
+
+    /**
+     * Verifica si una práctica pertenece a un Docente Asesor concreto.
+     * Usado en NotaDocenteService para validar propiedad antes de registrar nota.
+     */
+    boolean existsByIdAndDocenteAsesor_Id(Long practicaId, Long docenteId);
+
+    /**
+     * Lista las prácticas asignadas a un Docente Asesor filtradas por estado.
+     * Usado en el dashboard "Mis Estudiantes" del docente.
+     */
+    List<Practica> findByDocenteAsesor_IdAndEstado(Long docenteId, EstadoPractica estado);
 }
