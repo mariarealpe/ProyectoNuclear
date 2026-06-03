@@ -1,11 +1,13 @@
 package co.edu.cue.practicas;
 
 import co.edu.cue.practicas.dto.request.CambiarPasswordRequest;
+import co.edu.cue.practicas.dto.request.ActualizarConfiguracionProgramaRequest;
 import co.edu.cue.practicas.dto.request.CrearFacultadRequest;
 import co.edu.cue.practicas.dto.request.CrearProgramaRequest;
 import co.edu.cue.practicas.dto.request.CrearUsuarioRequest;
 import co.edu.cue.practicas.dto.request.EditarUsuarioRequest;
 import co.edu.cue.practicas.dto.request.LoginRequest;
+import co.edu.cue.practicas.model.entity.ConfiguracionPrograma;
 import co.edu.cue.practicas.model.entity.Facultad;
 import co.edu.cue.practicas.model.entity.Programa;
 import co.edu.cue.practicas.model.entity.Usuario;
@@ -65,6 +67,35 @@ public final class DatosDePrueba {
             facultad.getProgramas().add(programa);
         }
         return programa;
+    }
+
+    public static ConfiguracionPrograma configuracionPrograma(Long id, Programa programa) {
+        return ConfiguracionPrograma.builder()
+                .id(id)
+                .programa(programa)
+                .diasInactividadAlerta(5)
+                .notificacionesAutomaticas(true)
+                .notaMinimaAprobacion(3.2)
+                .notaMaxima(5.0)
+                .numeroCortes(3)
+                .maximoAsignacionesSimultaneas(1)
+                .correoRemitente("noreply@cue.edu.co")
+                .build();
+    }
+
+    public static ActualizarConfiguracionProgramaRequest actualizarConfiguracionProgramaRequest() {
+        ActualizarConfiguracionProgramaRequest request = new ActualizarConfiguracionProgramaRequest();
+        request.setDiasInactividadAlerta(6);
+        request.setNotificacionesAutomaticas(true);
+        request.setNotaMinimaAprobacion(3.0);
+        request.setNotaMaxima(5.0);
+        request.setNumeroCortes(3);
+        request.setMaximoAsignacionesSimultaneas(1);
+        request.setPlantillaCorreoAsignacion("<p>Asignación creada</p>");
+        request.setPlantillaCorreoSeguimiento("<p>Seguimiento actualizado</p>");
+        request.setPlantillaCorreoAlerta("<p>Alerta de inactividad</p>");
+        request.setCorreoRemitente("practicas@cue.edu.co");
+        return request;
     }
 
     public static LoginRequest loginRequest(String correo, String password) {
