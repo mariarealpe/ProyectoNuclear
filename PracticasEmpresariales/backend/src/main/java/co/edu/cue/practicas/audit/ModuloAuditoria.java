@@ -53,4 +53,7 @@ public final class ModuloAuditoria {
 
     /** Módulo de encuestas de cierre y autoevaluación — RF-08-05, RF-08-06 */
     public static final String ENCUESTAS = "ENCUESTAS";
+
+    /** Módulo del cierre formal de práctica — RF-09-02, RF-09-03 */
+    public static final String CIERRE_PRACTICA = "CIERRE_PRACTICA";
 }
