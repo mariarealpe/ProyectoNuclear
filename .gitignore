@@ -32,6 +32,4 @@ build/
 ### VS Code ###
 .vscode/
 
-### Local AI tool configurations ###
-.claude/
-.junie/
+
