@@ -1,11 +1,9 @@
 package co.edu.cue.practicas.service.seguimiento;
 
-import co.edu.cue.practicas.exception.OperacionNoPermitidaException;
 import co.edu.cue.practicas.exception.RecursoNoEncontradoException;
 import co.edu.cue.practicas.model.entity.Practica;
 import co.edu.cue.practicas.model.entity.SeguimientoPractica;
 import co.edu.cue.practicas.model.entity.Usuario;
-import co.edu.cue.practicas.model.enums.EstadoPractica;
 import co.edu.cue.practicas.model.enums.EstadoSeguimiento;
 import co.edu.cue.practicas.model.enums.TipoNotificacion;
 import co.edu.cue.practicas.repository.practica.SeguimientoPracticaRepository;
@@ -17,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,6 +33,8 @@ public class SeguimientoPracticaService {
     private final UsuarioRepository usuarioRepository;
     private final PracticaSprint3Service practicaService;
     private final NotificacionSprint3Service notificacionService;
+    private final SeguimientoPracticaValidator validator;
+    private final SeguimientoPracticaMapper mapper;
 
     @Transactional
     public Map<String, Object> crear(Long practicaId,
@@ -48,15 +47,7 @@ public class SeguimientoPracticaService {
         Usuario estudiante = usuarioRepository.findById(estudianteId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Estudiante no encontrado"));
 
-        if (practica.getEstado() != EstadoPractica.EN_CURSO) {
-            throw new OperacionNoPermitidaException("La practica debe estar EN_CURSO para registrar seguimiento");
-        }
-        if (!practica.getEstudiante().getId().equals(estudianteId)) {
-            throw new OperacionNoPermitidaException("El seguimiento debe ser cargado por el estudiante de la practica");
-        }
-        if (seguimientoRepository.findByPractica_IdAndSemana(practicaId, semana).isPresent()) {
-            throw new OperacionNoPermitidaException("Ya existe seguimiento para esa semana");
-        }
+        validator.validarCreacion(practica, estudianteId, semana);
 
         SeguimientoPractica seguimiento = SeguimientoPractica.builder()
                 .practica(practica)
@@ -68,7 +59,7 @@ public class SeguimientoPracticaService {
                 .cargadoPor(estudiante)
                 .build();
 
-        return toMap(seguimientoRepository.save(seguimiento));
+        return mapper.toMap(seguimientoRepository.save(seguimiento));
     }
 
     @Transactional
@@ -77,9 +68,7 @@ public class SeguimientoPracticaService {
         Usuario docente = usuarioRepository.findById(docenteId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Docente no encontrado"));
 
-        if (estado == EstadoSeguimiento.PENDIENTE) {
-            throw new OperacionNoPermitidaException("La revision debe aprobar o rechazar el seguimiento");
-        }
+        validator.validarRevision(estado);
 
         seguimiento.setDocenteAsesor(docente);
         seguimiento.setEstado(estado);
@@ -97,7 +86,7 @@ public class SeguimientoPracticaService {
             );
         }
 
-        return toMap(seguimientoRepository.save(seguimiento));
+        return mapper.toMap(seguimientoRepository.save(seguimiento));
     }
 
     @Transactional
@@ -107,9 +96,7 @@ public class SeguimientoPracticaService {
                 .map(SeguimientoPractica::getSemana)
                 .orElse(seguimiento.getSemana());
 
-        if (!seguimiento.esEditablePorEstudiante(semanaActual)) {
-            throw new OperacionNoPermitidaException("Solo se puede corregir el seguimiento rechazado de la semana mas reciente");
-        }
+        validator.validarCorreccion(seguimiento, semanaActual);
 
         seguimiento.setActividades(actividades);
         seguimiento.setLogros(logros);
@@ -119,14 +106,14 @@ public class SeguimientoPracticaService {
         seguimiento.setObservacionesDocente(null);
         seguimiento.setFechaRevision(null);
         seguimiento.setDocenteAsesor(null);
-        return toMap(seguimientoRepository.save(seguimiento));
+        return mapper.toMap(seguimientoRepository.save(seguimiento));
     }
 
     @Transactional(readOnly = true)
     public List<Map<String, Object>> listarPorPractica(Long practicaId) {
         return seguimientoRepository.findByPractica_IdOrderBySemanaAsc(practicaId)
                 .stream()
-                .map(this::toMap)
+                .map(mapper::toMap)
                 .toList();
     }
 
@@ -135,21 +122,4 @@ public class SeguimientoPracticaService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("Seguimiento no encontrado"));
     }
 
-    private Map<String, Object> toMap(SeguimientoPractica s) {
-        Map<String, Object> map = new LinkedHashMap<>();
-        map.put("id", s.getId());
-        map.put("practicaId", s.getPractica().getId());
-        map.put("semana", s.getSemana());
-        map.put("estado", s.getEstado());
-        map.put("actividades", s.getActividades());
-        map.put("logros", s.getLogros());
-        map.put("dificultades", s.getDificultades());
-        map.put("observacionesDocente", s.getObservacionesDocente());
-        map.put("cargadoPorId", s.getCargadoPor().getId());
-        map.put("docenteAsesorId", s.getDocenteAsesor() == null ? null : s.getDocenteAsesor().getId());
-        map.put("fechaCarga", s.getFechaCarga());
-        map.put("fechaRevision", s.getFechaRevision());
-        map.put("version", s.getVersion());
-        return map;
-    }
 }

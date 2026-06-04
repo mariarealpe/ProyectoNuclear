@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,6 +35,8 @@ public class DocumentoPracticaService {
     private final FirmaDocumentoRepository firmaRepository;
     private final UsuarioRepository usuarioRepository;
     private final PracticaSprint3Service practicaService;
+    private final DocumentoPracticaValidator validator;
+    private final DocumentoPracticaMapper mapper;
 
     @Transactional
     public Map<String, Object> cargar(Long practicaId,
@@ -46,7 +47,7 @@ public class DocumentoPracticaService {
                                       Long tamanho,
                                       Integer numPaginas) {
         Practica practica = practicaService.buscar(practicaId);
-        validarMutable(practica);
+        validator.validarMutable(practica);
 
         DocumentoPractica documento = DocumentoPractica.builder()
                 .practica(practica)
@@ -59,13 +60,13 @@ public class DocumentoPracticaService {
                 .esMutable(true)
                 .build();
 
-        return toMap(documentoRepository.save(documento));
+        return mapper.documentoToMap(documentoRepository.save(documento));
     }
 
     @Transactional
     public Map<String, Object> crearFirma(Long documentoId, TipoFirmante tipoFirmante, Long usuarioId) {
         DocumentoPractica documento = buscar(documentoId);
-        validarMutable(documento.getPractica());
+        validator.validarMutable(documento.getPractica());
         if (documento.getTipo() != TipoDocumento.CONVENIO) {
             throw new OperacionNoPermitidaException("Solo los convenios tienen firmas");
         }
@@ -80,7 +81,7 @@ public class DocumentoPracticaService {
                         .build());
         firma.setUsuario(usuario);
 
-        return firmaToMap(firmaRepository.save(firma));
+        return mapper.firmaToMap(firmaRepository.save(firma));
     }
 
     @Transactional
@@ -90,17 +91,17 @@ public class DocumentoPracticaService {
         if (!firma.getUsuario().getId().equals(usuarioId)) {
             throw new OperacionNoPermitidaException("El usuario no corresponde al firmante registrado");
         }
-        validarMutable(firma.getDocumento().getPractica());
+        validator.validarMutable(firma.getDocumento().getPractica());
         firma.setFechaFirma(LocalDateTime.now());
         firma.setHashValidacion(hashValidacion);
-        return firmaToMap(firmaRepository.save(firma));
+        return mapper.firmaToMap(firmaRepository.save(firma));
     }
 
     @Transactional(readOnly = true)
     public List<Map<String, Object>> listarPorPractica(Long practicaId) {
         return documentoRepository.findByPractica_Id(practicaId)
                 .stream()
-                .map(this::toMap)
+                .map(mapper::documentoToMap)
                 .toList();
     }
 
@@ -108,7 +109,7 @@ public class DocumentoPracticaService {
     public List<Map<String, Object>> firmas(Long documentoId) {
         return firmaRepository.findByDocumento_Id(documentoId)
                 .stream()
-                .map(this::firmaToMap)
+                .map(mapper::firmaToMap)
                 .toList();
     }
 
@@ -117,38 +118,4 @@ public class DocumentoPracticaService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("Documento no encontrado"));
     }
 
-    private void validarMutable(Practica practica) {
-        if (practica.getEstado() == EstadoPractica.FINALIZADA || practica.getEstado() == EstadoPractica.CANCELADA) {
-            throw new OperacionNoPermitidaException("Los documentos de practicas finalizadas o canceladas son inmutables");
-        }
-    }
-
-    private Map<String, Object> toMap(DocumentoPractica d) {
-        Map<String, Object> map = new LinkedHashMap<>();
-        map.put("id", d.getId());
-        map.put("practicaId", d.getPractica().getId());
-        map.put("tipo", d.getTipo());
-        map.put("urlArchivo", d.getUrlArchivo());
-        map.put("nombreArchivo", d.getNombreArchivo());
-        map.put("mimeType", d.getMimeType());
-        map.put("tamanho", d.getTamanho());
-        map.put("numPaginas", d.getNumPaginas());
-        map.put("esMutable", d.isEsMutable());
-        map.put("firmasCompletas", d.tieneTodasLasFirmas());
-        map.put("creadoEn", d.getCreadoEn());
-        return map;
-    }
-
-    private Map<String, Object> firmaToMap(FirmaDocumento f) {
-        Map<String, Object> map = new LinkedHashMap<>();
-        map.put("id", f.getId());
-        map.put("documentoId", f.getDocumento().getId());
-        map.put("tipo", f.getTipo());
-        map.put("usuarioId", f.getUsuario().getId());
-        map.put("usuario", f.getUsuario().getNombre());
-        map.put("fechaFirma", f.getFechaFirma());
-        map.put("hashValidacion", f.getHashValidacion());
-        map.put("confirmada", f.estaConfirmada());
-        return map;
-    }
 }
