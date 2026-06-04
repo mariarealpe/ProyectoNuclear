@@ -9,7 +9,8 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "practicas", indexes = {
         @Index(name = "idx_practica_estudiante", columnList = "estudiante_id"),
-        @Index(name = "idx_practica_estado", columnList = "estado")
+        @Index(name = "idx_practica_estado",     columnList = "estado"),
+        @Index(name = "idx_practica_docente",    columnList = "docente_asesor_id")
 })
 @Getter
 @Setter
@@ -25,6 +26,15 @@ public class Practica {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "estudiante_id", nullable = false)
     private Usuario estudiante;
+
+    /**
+     * Docente Asesor responsable del seguimiento académico de esta práctica.
+     * Se asigna al confirmar la vinculación (cuando la práctica pasa a EN_CURSO).
+     * Nullable para compatibilidad con prácticas creadas antes de este campo.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "docente_asesor_id")
+    private Usuario docenteAsesor;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "programa_id", nullable = false)

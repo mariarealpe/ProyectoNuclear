@@ -8,6 +8,7 @@ import co.edu.cue.practicas.model.entity.Practica;
 import co.edu.cue.practicas.model.entity.Usuario;
 import co.edu.cue.practicas.model.enums.EstadoAsignacion;
 import co.edu.cue.practicas.model.enums.EstadoPractica;
+import co.edu.cue.practicas.model.enums.Rol;
 import co.edu.cue.practicas.model.enums.TipoDocumento;
 import co.edu.cue.practicas.model.enums.TipoNotificacion;
 import co.edu.cue.practicas.repository.asignacion.AsignacionRepository;
@@ -81,7 +82,7 @@ public class PracticaSprint3Service {
     }
 
     @Transactional
-    public Map<String, Object> confirmarVinculacion(Long practicaId, Long usuarioId, LocalDateTime fechaInicio, LocalDateTime fechaFin) {
+    public Map<String, Object> confirmarVinculacion(Long practicaId, Long usuarioId, Long docenteAsesorId, LocalDateTime fechaInicio, LocalDateTime fechaFin) {
         Practica practica = buscar(practicaId);
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado"));
@@ -104,7 +105,14 @@ public class PracticaSprint3Service {
             throw new OperacionNoPermitidaException("El convenio requiere las 3 firmas confirmadas");
         }
 
+        Usuario docente = usuarioRepository.findById(docenteAsesorId)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Docente Asesor no encontrado: " + docenteAsesorId));
+        if (docente.getRol() != Rol.DOCENTE_ASESOR) {
+            throw new OperacionNoPermitidaException("El usuario indicado no tiene rol DOCENTE_ASESOR");
+        }
+
         practica.setEstado(EstadoPractica.EN_CURSO);
+        practica.setDocenteAsesor(docente);
         asignacion.setEstado(EstadoAsignacion.EN_CURSO);
         asignacion.setFechaInicio(fechaInicio);
         asignacion.setFechaFin(fechaFin);
@@ -155,6 +163,8 @@ public class PracticaSprint3Service {
         map.put("numeroPractica", p.getNumeroPractica());
         map.put("nombre", p.getNombre());
         map.put("estado", p.getEstado());
+        map.put("docenteAsesorId", p.getDocenteAsesor() == null ? null : p.getDocenteAsesor().getId());
+        map.put("docenteAsesor",   p.getDocenteAsesor() == null ? null : p.getDocenteAsesor().getNombre());
         map.put("documentosRequeridos", p.getDocumentosRequeridos());
         map.put("creadoEn", p.getCreadoEn());
         map.put("actualizadoEn", p.getActualizadoEn());

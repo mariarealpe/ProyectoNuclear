@@ -52,6 +52,7 @@ public class PracticaSprint3Controller {
         Map<String, Object> practica = practicaService.confirmarVinculacion(
                 id,
                 longValue(request, "usuarioId"),
+                longValue(request, "docenteAsesorId"),
                 dateTimeValue(request, "fechaInicio"),
                 dateTimeValue(request, "fechaFin")
         );

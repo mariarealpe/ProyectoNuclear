@@ -38,4 +38,7 @@ public final class ModuloAuditoria {
 
     /** Módulo de vacantes: crear, editar, aprobar, rechazar, cerrar */
     public static final String VACANTES   = "VACANTES";
+
+    /** Módulo de evaluaciones del Docente Asesor — RF-08-01 */
+    public static final String EVALUACIONES_DOCENTE = "EVALUACIONES_DOCENTE";
 }

@@ -1,15 +1,22 @@
 package co.edu.cue.practicas;
 
 import co.edu.cue.practicas.dto.request.CambiarPasswordRequest;
+import co.edu.cue.practicas.dto.request.ActualizarConfiguracionProgramaRequest;
 import co.edu.cue.practicas.dto.request.CrearFacultadRequest;
 import co.edu.cue.practicas.dto.request.CrearProgramaRequest;
 import co.edu.cue.practicas.dto.request.CrearUsuarioRequest;
 import co.edu.cue.practicas.dto.request.EditarUsuarioRequest;
 import co.edu.cue.practicas.dto.request.LoginRequest;
+import co.edu.cue.practicas.dto.request.RegistrarEvaluacionDocenteRequest;
+import co.edu.cue.practicas.model.entity.ConfiguracionPrograma;
+import co.edu.cue.practicas.model.entity.EvaluacionDocente;
 import co.edu.cue.practicas.model.entity.Facultad;
+import co.edu.cue.practicas.model.entity.Practica;
 import co.edu.cue.practicas.model.entity.Programa;
 import co.edu.cue.practicas.model.entity.Usuario;
+import co.edu.cue.practicas.model.enums.EstadoPractica;
 import co.edu.cue.practicas.model.enums.EtiquetaCargo;
+import co.edu.cue.practicas.model.enums.ResultadoEvaluacion;
 import co.edu.cue.practicas.model.enums.Rol;
 import co.edu.cue.practicas.security.CustomUserDetails;
 
@@ -65,6 +72,70 @@ public final class DatosDePrueba {
             facultad.getProgramas().add(programa);
         }
         return programa;
+    }
+
+    public static ConfiguracionPrograma configuracionPrograma(Long id, Programa programa) {
+        return ConfiguracionPrograma.builder()
+                .id(id)
+                .programa(programa)
+                .diasInactividadAlerta(5)
+                .notificacionesAutomaticas(true)
+                .notaMinimaAprobacion(3.2)
+                .notaMaxima(5.0)
+                .numeroCortes(3)
+                .maximoAsignacionesSimultaneas(1)
+                .correoRemitente("noreply@cue.edu.co")
+                .build();
+    }
+
+    public static ActualizarConfiguracionProgramaRequest actualizarConfiguracionProgramaRequest() {
+        ActualizarConfiguracionProgramaRequest request = new ActualizarConfiguracionProgramaRequest();
+        request.setDiasInactividadAlerta(6);
+        request.setNotificacionesAutomaticas(true);
+        request.setNotaMinimaAprobacion(3.0);
+        request.setNotaMaxima(5.0);
+        request.setNumeroCortes(3);
+        request.setMaximoAsignacionesSimultaneas(1);
+        request.setPlantillaCorreoAsignacion("<p>Asignación creada</p>");
+        request.setPlantillaCorreoSeguimiento("<p>Seguimiento actualizado</p>");
+        request.setPlantillaCorreoAlerta("<p>Alerta de inactividad</p>");
+        request.setCorreoRemitente("practicas@cue.edu.co");
+        return request;
+    }
+
+    public static Usuario docenteAsesor() {
+        return usuario(10L, "Docente Asesor", "docente@cue.edu.co", Rol.DOCENTE_ASESOR);
+    }
+
+    public static Practica practica(Long id, Usuario estudiante, Programa programa, Usuario docente) {
+        return Practica.builder()
+                .id(id)
+                .estudiante(estudiante)
+                .programa(programa)
+                .docenteAsesor(docente)
+                .numeroPractica(1)
+                .nombre("Práctica Empresarial")
+                .descripcion("Descripción de práctica")
+                .estado(EstadoPractica.EN_CURSO)
+                .build();
+    }
+
+    public static EvaluacionDocente evaluacionDocente(Long id, Practica practica, Usuario docente) {
+        return EvaluacionDocente.builder()
+                .id(id)
+                .practica(practica)
+                .docente(docente)
+                .nota(4.0)
+                .resultado(ResultadoEvaluacion.APROBADO)
+                .observaciones("Desempeño sobresaliente durante la práctica")
+                .build();
+    }
+
+    public static RegistrarEvaluacionDocenteRequest registrarEvaluacionRequest(double nota, String observaciones) {
+        RegistrarEvaluacionDocenteRequest request = new RegistrarEvaluacionDocenteRequest();
+        request.setNota(nota);
+        request.setObservaciones(observaciones);
+        return request;
     }
 
     public static LoginRequest loginRequest(String correo, String password) {

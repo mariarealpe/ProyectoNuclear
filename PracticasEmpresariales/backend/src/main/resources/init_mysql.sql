@@ -254,6 +254,7 @@ CREATE TABLE IF NOT EXISTS practicas (
     programa_id           BIGINT       NOT NULL,
     expediente_id         BIGINT                DEFAULT NULL,
     catalogo_id           BIGINT                DEFAULT NULL,
+    docente_asesor_id     BIGINT                DEFAULT NULL,
     numero_practica       INT          NOT NULL,
     nombre                VARCHAR(200) NOT NULL,
     descripcion           VARCHAR(1000)         DEFAULT NULL,
@@ -264,11 +265,13 @@ CREATE TABLE IF NOT EXISTS practicas (
 
     PRIMARY KEY (id),
     KEY idx_practica_estudiante (estudiante_id),
-    KEY idx_practica_estado (estado),
-    CONSTRAINT fk_practica_estudiante  FOREIGN KEY (estudiante_id) REFERENCES usuarios (id),
-    CONSTRAINT fk_practica_programa    FOREIGN KEY (programa_id)   REFERENCES programas (id),
-    CONSTRAINT fk_practica_expediente  FOREIGN KEY (expediente_id) REFERENCES expedientes (id),
-    CONSTRAINT fk_practica_catalogo    FOREIGN KEY (catalogo_id)   REFERENCES practicas_catalogo (id)
+    KEY idx_practica_estado     (estado),
+    KEY idx_practica_docente    (docente_asesor_id),
+    CONSTRAINT fk_practica_estudiante  FOREIGN KEY (estudiante_id)    REFERENCES usuarios (id),
+    CONSTRAINT fk_practica_programa    FOREIGN KEY (programa_id)      REFERENCES programas (id),
+    CONSTRAINT fk_practica_expediente  FOREIGN KEY (expediente_id)    REFERENCES expedientes (id),
+    CONSTRAINT fk_practica_catalogo    FOREIGN KEY (catalogo_id)      REFERENCES practicas_catalogo (id),
+    CONSTRAINT fk_practica_docente     FOREIGN KEY (docente_asesor_id) REFERENCES usuarios (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
@@ -725,3 +728,41 @@ UNION ALL
 SELECT 'Usuarios',          CAST(COUNT(*) AS CHAR) FROM usuarios
 UNION ALL
 SELECT 'Vacantes',          CAST(COUNT(*) AS CHAR) FROM vacantes;
+
+
+-- ----------------------------------------------------------------
+-- TABLA: evaluaciones_docente  (RF-08-01 — una evaluación por práctica)
+-- ----------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS evaluaciones_docente (
+    id              BIGINT      NOT NULL AUTO_INCREMENT,
+    practica_id     BIGINT      NOT NULL,
+    docente_id      BIGINT      NOT NULL,
+    nota            DOUBLE      NOT NULL,
+    resultado       VARCHAR(20) NOT NULL,
+    observaciones   LONGTEXT    NOT NULL,
+    creado_en       DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en  DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_evaluacion_practica (practica_id),
+    KEY idx_evaluacion_docente (docente_id),
+    CONSTRAINT fk_eval_practica FOREIGN KEY (practica_id) REFERENCES practicas (id),
+    CONSTRAINT fk_eval_docente  FOREIGN KEY (docente_id)  REFERENCES usuarios  (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ================================================================
+-- SPRINT 4 — ALTERACIONES INCREMENTALES
+-- Ejecutar SOLO si la BD ya existe (instalaciones anteriores al Sprint 4).
+-- En instalaciones nuevas el CREATE TABLE de practicas ya incluye estos campos.
+-- ================================================================
+
+-- RF-08-01 base: relación formal Practica ↔ Docente Asesor
+ALTER TABLE practicas
+    ADD COLUMN IF NOT EXISTS docente_asesor_id BIGINT DEFAULT NULL,
+    ADD KEY IF NOT EXISTS idx_practica_docente (docente_asesor_id);
+
+-- FK separada para evitar error si la columna ya existía con otra FK
+ALTER TABLE practicas
+    ADD CONSTRAINT IF NOT EXISTS fk_practica_docente
+        FOREIGN KEY (docente_asesor_id) REFERENCES usuarios (id);
