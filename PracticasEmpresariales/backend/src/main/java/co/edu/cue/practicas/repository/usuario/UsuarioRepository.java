@@ -47,4 +47,14 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     /** Usuarios activos por rol y facultad (notificaciones a Coordinación Académica — RF-09-03). */
     List<Usuario> findByRolAndFacultad_IdAndActivoTrue(Rol rol, Long facultadId);
+
+    // ====== Agregaciones para reportes RF-10-01 / RF-10-04 ======
+
+    long countByRolAndEstadoEstudianteAndPrograma_Id(
+            Rol rol, EstadoEstudiante estado, Long programaId);
+
+    long countByRolAndEstadoEstudianteAndPrograma_Facultad_Id(
+            Rol rol, EstadoEstudiante estado, Long facultadId);
+
+    long countByRolAndEstadoEstudiante(Rol rol, EstadoEstudiante estado);
 }

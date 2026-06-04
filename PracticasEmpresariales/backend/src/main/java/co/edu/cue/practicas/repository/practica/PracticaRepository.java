@@ -35,4 +35,20 @@ public interface PracticaRepository extends JpaRepository<Practica, Long> {
      * Usado en el dashboard "Mis Estudiantes" del docente.
      */
     List<Practica> findByDocenteAsesor_IdAndEstado(Long docenteId, EstadoPractica estado);
+
+    // ====== Agregaciones para reportes RF-10-01 / RF-10-04 ======
+
+    long countByEstado(EstadoPractica estado);
+
+    long countByPrograma_IdAndEstado(Long programaId, EstadoPractica estado);
+
+    long countByPrograma_Facultad_IdAndEstado(Long facultadId, EstadoPractica estado);
+
+    long countByPrograma_IdAndNumeroPracticaAndEstado(
+            Long programaId, int numeroPractica, EstadoPractica estado);
+
+    long countByCreadoEnBetweenAndEstado(
+            java.time.LocalDateTime desde,
+            java.time.LocalDateTime hasta,
+            EstadoPractica estado);
 }
