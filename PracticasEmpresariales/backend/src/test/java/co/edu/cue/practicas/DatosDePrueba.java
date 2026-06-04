@@ -8,8 +8,10 @@ import co.edu.cue.practicas.dto.request.CrearUsuarioRequest;
 import co.edu.cue.practicas.dto.request.EditarUsuarioRequest;
 import co.edu.cue.practicas.dto.request.LoginRequest;
 import co.edu.cue.practicas.dto.request.RegistrarEvaluacionDocenteRequest;
+import co.edu.cue.practicas.dto.request.RegistrarEvaluacionTutorRequest;
 import co.edu.cue.practicas.model.entity.ConfiguracionPrograma;
 import co.edu.cue.practicas.model.entity.EvaluacionDocente;
+import co.edu.cue.practicas.model.entity.EvaluacionTutor;
 import co.edu.cue.practicas.model.entity.Facultad;
 import co.edu.cue.practicas.model.entity.Practica;
 import co.edu.cue.practicas.model.entity.Programa;
@@ -107,6 +109,14 @@ public final class DatosDePrueba {
         return usuario(10L, "Docente Asesor", "docente@cue.edu.co", Rol.DOCENTE_ASESOR);
     }
 
+    public static Usuario tutorEmpresarial() {
+        return usuario(11L, "Tutor Empresarial", "tutor@cue.edu.co", Rol.TUTOR_EMPRESARIAL);
+    }
+
+    public static Usuario coordinadorPracticas() {
+        return usuario(12L, "Coordinador Prácticas", "coordpracticas@cue.edu.co", Rol.COORDINADOR_PRACTICAS);
+    }
+
     public static Practica practica(Long id, Usuario estudiante, Programa programa, Usuario docente) {
         return Practica.builder()
                 .id(id)
@@ -118,6 +128,12 @@ public final class DatosDePrueba {
                 .descripcion("Descripción de práctica")
                 .estado(EstadoPractica.EN_CURSO)
                 .build();
+    }
+
+    public static Practica practica(Long id, Usuario estudiante, Programa programa, Usuario docente, Usuario tutor) {
+        Practica p = practica(id, estudiante, programa, docente);
+        p.setTutorEmpresarial(tutor);
+        return p;
     }
 
     public static EvaluacionDocente evaluacionDocente(Long id, Practica practica, Usuario docente) {
@@ -133,6 +149,24 @@ public final class DatosDePrueba {
 
     public static RegistrarEvaluacionDocenteRequest registrarEvaluacionRequest(double nota, String observaciones) {
         RegistrarEvaluacionDocenteRequest request = new RegistrarEvaluacionDocenteRequest();
+        request.setNota(nota);
+        request.setObservaciones(observaciones);
+        return request;
+    }
+
+    public static EvaluacionTutor evaluacionTutor(Long id, Practica practica, Usuario tutor) {
+        return EvaluacionTutor.builder()
+                .id(id)
+                .practica(practica)
+                .tutor(tutor)
+                .nota(4.2)
+                .resultado(ResultadoEvaluacion.APROBADO)
+                .observaciones("Buen desempeño en la empresa")
+                .build();
+    }
+
+    public static RegistrarEvaluacionTutorRequest registrarEvaluacionTutorRequest(double nota, String observaciones) {
+        RegistrarEvaluacionTutorRequest request = new RegistrarEvaluacionTutorRequest();
         request.setNota(nota);
         request.setObservaciones(observaciones);
         return request;

@@ -41,4 +41,7 @@ public final class ModuloAuditoria {
 
     /** Módulo de evaluaciones del Docente Asesor — RF-08-01 */
     public static final String EVALUACIONES_DOCENTE = "EVALUACIONES_DOCENTE";
+
+    /** Módulo de evaluaciones del Tutor Empresarial — RF-08-02 */
+    public static final String EVALUACIONES_TUTOR = "EVALUACIONES_TUTOR";
 }
