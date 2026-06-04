@@ -810,3 +810,26 @@ CREATE TABLE IF NOT EXISTS evaluaciones_tutor (
     CONSTRAINT fk_eval_tutor_practica FOREIGN KEY (practica_id) REFERENCES practicas (id),
     CONSTRAINT fk_eval_tutor_usuario  FOREIGN KEY (tutor_id)    REFERENCES usuarios  (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ----------------------------------------------------------------
+-- TABLA: notas_finales  (RF-08-04 — nota final del Coordinador)
+-- ----------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS notas_finales (
+    id              BIGINT      NOT NULL AUTO_INCREMENT,
+    practica_id     BIGINT      NOT NULL,
+    coordinador_id  BIGINT      NOT NULL,
+    nota            DOUBLE      NOT NULL,
+    resultado       VARCHAR(20) NOT NULL,
+    observaciones   LONGTEXT             DEFAULT NULL,
+    cerrada         TINYINT(1)  NOT NULL DEFAULT 0,
+    cerrada_en      DATETIME             DEFAULT NULL,
+    creado_en       DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en  DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_nota_final_practica (practica_id),
+    KEY idx_nota_final_coord (coordinador_id),
+    CONSTRAINT fk_nota_final_practica FOREIGN KEY (practica_id)    REFERENCES practicas (id),
+    CONSTRAINT fk_nota_final_coord    FOREIGN KEY (coordinador_id) REFERENCES usuarios  (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

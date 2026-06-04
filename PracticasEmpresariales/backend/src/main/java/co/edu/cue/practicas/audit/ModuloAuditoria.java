@@ -44,4 +44,7 @@ public final class ModuloAuditoria {
 
     /** Módulo de evaluaciones del Tutor Empresarial — RF-08-02 */
     public static final String EVALUACIONES_TUTOR = "EVALUACIONES_TUTOR";
+
+    /** Módulo de la nota final registrada por el Coordinador — RF-08-04 */
+    public static final String NOTA_FINAL = "NOTA_FINAL";
 }

@@ -9,13 +9,16 @@ import co.edu.cue.practicas.dto.request.EditarUsuarioRequest;
 import co.edu.cue.practicas.dto.request.LoginRequest;
 import co.edu.cue.practicas.dto.request.RegistrarEvaluacionDocenteRequest;
 import co.edu.cue.practicas.dto.request.RegistrarEvaluacionTutorRequest;
+import co.edu.cue.practicas.dto.request.RegistrarNotaFinalRequest;
 import co.edu.cue.practicas.model.entity.ConfiguracionPrograma;
 import co.edu.cue.practicas.model.entity.EvaluacionDocente;
 import co.edu.cue.practicas.model.entity.EvaluacionTutor;
 import co.edu.cue.practicas.model.entity.Facultad;
+import co.edu.cue.practicas.model.entity.NotaFinal;
 import co.edu.cue.practicas.model.entity.Practica;
 import co.edu.cue.practicas.model.entity.Programa;
 import co.edu.cue.practicas.model.entity.Usuario;
+import co.edu.cue.practicas.model.enums.ResultadoNotaFinal;
 import co.edu.cue.practicas.model.enums.EstadoPractica;
 import co.edu.cue.practicas.model.enums.EtiquetaCargo;
 import co.edu.cue.practicas.model.enums.ResultadoEvaluacion;
@@ -167,6 +170,25 @@ public final class DatosDePrueba {
 
     public static RegistrarEvaluacionTutorRequest registrarEvaluacionTutorRequest(double nota, String observaciones) {
         RegistrarEvaluacionTutorRequest request = new RegistrarEvaluacionTutorRequest();
+        request.setNota(nota);
+        request.setObservaciones(observaciones);
+        return request;
+    }
+
+    public static NotaFinal notaFinal(Long id, Practica practica, Usuario coordinador) {
+        return NotaFinal.builder()
+                .id(id)
+                .practica(practica)
+                .coordinador(coordinador)
+                .nota(4.0)
+                .resultado(ResultadoNotaFinal.APROBADO)
+                .observaciones("Aprueba la práctica")
+                .cerrada(false)
+                .build();
+    }
+
+    public static RegistrarNotaFinalRequest registrarNotaFinalRequest(double nota, String observaciones) {
+        RegistrarNotaFinalRequest request = new RegistrarNotaFinalRequest();
         request.setNota(nota);
         request.setObservaciones(observaciones);
         return request;
