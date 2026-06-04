@@ -833,3 +833,23 @@ CREATE TABLE IF NOT EXISTS notas_finales (
     CONSTRAINT fk_nota_final_practica FOREIGN KEY (practica_id)    REFERENCES practicas (id),
     CONSTRAINT fk_nota_final_coord    FOREIGN KEY (coordinador_id) REFERENCES usuarios  (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ----------------------------------------------------------------
+-- TABLA: plantillas_notificacion  (RF-11-05 — plantillas configurables por evento)
+-- ----------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS plantillas_notificacion (
+    id                             BIGINT       NOT NULL AUTO_INCREMENT,
+    evento                         VARCHAR(60)  NOT NULL,
+    asunto                         VARCHAR(250) NOT NULL,
+    cuerpo_html                    LONGTEXT     NOT NULL,
+    rol_receptor                   VARCHAR(30)           DEFAULT NULL,
+    obligatorio                    TINYINT(1)   NOT NULL DEFAULT 0,
+    frecuencia_recordatorio_dias   INT          NOT NULL DEFAULT 3,
+    activa                         TINYINT(1)   NOT NULL DEFAULT 1,
+    creado_en                      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en                 DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_plantilla_evento (evento)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

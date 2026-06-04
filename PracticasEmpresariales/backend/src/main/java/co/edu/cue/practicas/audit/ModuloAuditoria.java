@@ -47,4 +47,7 @@ public final class ModuloAuditoria {
 
     /** Módulo de la nota final registrada por el Coordinador — RF-08-04 */
     public static final String NOTA_FINAL = "NOTA_FINAL";
+
+    /** Módulo de plantillas y notificaciones por correo — RF-11-05 */
+    public static final String NOTIFICACIONES = "NOTIFICACIONES";
 }
