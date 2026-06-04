@@ -22,6 +22,8 @@ import co.edu.cue.practicas.security.CustomUserDetails;
 import co.edu.cue.practicas.security.annotation.RequiereRol;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+
+import java.util.Locale;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -227,7 +229,7 @@ public class EvaluacionDocenteService {
 
     private void validarRangoNota(double nota, double notaMaxima) {
         if (nota < 0.0 || nota > notaMaxima) {
-            throw new OperacionNoPermitidaException(String.format(
+            throw new OperacionNoPermitidaException(String.format(Locale.US,
                     "La nota debe estar entre 0.0 y %.1f", notaMaxima));
         }
     }

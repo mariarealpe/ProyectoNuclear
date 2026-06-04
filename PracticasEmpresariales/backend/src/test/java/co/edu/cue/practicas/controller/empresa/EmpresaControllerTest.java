@@ -174,7 +174,7 @@ class EmpresaControllerTest {
                                   "correoContacto": "contacto@softcue.com"
                                 }
                                 """))
-                .andExpect(status().isConflict())
+                .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.exitoso").value(false))
                 .andExpect(jsonPath("$.mensaje").value("El NIT 900999999-1 ya esta en uso por otra empresa."));
     }

@@ -115,7 +115,7 @@ class AsignacionControllerTest {
                                   "motivo": "Sin documentos"
                                 }
                                 """))
-                .andExpect(status().isConflict())
+                .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.exitoso").value(false))
                 .andExpect(jsonPath("$.mensaje").value("Transicion de estado no permitida"));
     }

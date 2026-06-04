@@ -14,7 +14,6 @@ import co.edu.cue.practicas.repository.practica.PracticaRepository;
 import co.edu.cue.practicas.repository.usuario.UsuarioRepository;
 import co.edu.cue.practicas.security.CustomUserDetails;
 import co.edu.cue.practicas.security.annotation.RequiereRol;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +35,6 @@ import java.util.Map;
  *  - COORDINADOR_PRACTICAS está limitado a su programa.
  */
 @Service
-@RequiredArgsConstructor
 public class ReporteEstadoService {
 
     private final PracticaRepository practicaRepository;

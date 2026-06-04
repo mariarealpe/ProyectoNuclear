@@ -13,6 +13,8 @@ import co.edu.cue.practicas.repository.practica.SeguimientoPracticaRepository;
 import co.edu.cue.practicas.repository.usuario.UsuarioRepository;
 import co.edu.cue.practicas.service.notificacion.NotificacionSprint3Service;
 import co.edu.cue.practicas.service.practica.PracticaSprint3Service;
+import co.edu.cue.practicas.service.seguimiento.SeguimientoPracticaValidator;
+import co.edu.cue.practicas.service.seguimiento.SeguimientoPracticaMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -56,7 +58,9 @@ class SeguimientoPracticaServiceTest {
                 seguimientoRepository,
                 usuarioRepository,
                 practicaService,
-                notificacionService);
+                notificacionService,
+                new SeguimientoPracticaValidator(seguimientoRepository),
+                new SeguimientoPracticaMapper());
     }
 
     @Test

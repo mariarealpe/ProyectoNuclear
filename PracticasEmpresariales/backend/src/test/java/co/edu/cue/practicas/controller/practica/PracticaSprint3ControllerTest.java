@@ -65,7 +65,7 @@ class PracticaSprint3ControllerTest {
     void deberiaConfirmarVinculacionYResponderOk() throws Exception {
         LocalDateTime inicio = LocalDateTime.parse("2026-06-10T08:00:00");
         LocalDateTime fin = LocalDateTime.parse("2026-12-10T17:00:00");
-        when(practicaService.confirmarVinculacion(eq(50L), eq(30L), eq(inicio), eq(fin)))
+        when(practicaService.confirmarVinculacion(eq(50L), eq(30L), eq(40L), eq(inicio), eq(fin)))
                 .thenReturn(practicaMap(EstadoPractica.EN_CURSO));
 
         mockMvc.perform(patch("/practicas/{id}/confirmar-vinculacion", 50L)
@@ -73,6 +73,7 @@ class PracticaSprint3ControllerTest {
                         .content("""
                                 {
                                   "usuarioId": 30,
+                                  "docenteAsesorId": 40,
                                   "fechaInicio": "2026-06-10T08:00:00",
                                   "fechaFin": "2026-12-10T17:00:00"
                                 }
@@ -85,7 +86,7 @@ class PracticaSprint3ControllerTest {
 
     @Test
     void deberiaResponderConflictCuandoNoTieneFirmasCompletas() throws Exception {
-        when(practicaService.confirmarVinculacion(eq(50L), eq(30L), eq(null), eq(null)))
+        when(practicaService.confirmarVinculacion(eq(50L), eq(30L), eq(null), eq(null), eq(null)))
                 .thenThrow(new OperacionNoPermitidaException("El convenio requiere las 3 firmas confirmadas"));
 
         mockMvc.perform(patch("/practicas/{id}/confirmar-vinculacion", 50L)
@@ -95,7 +96,7 @@ class PracticaSprint3ControllerTest {
                                   "usuarioId": 30
                                 }
                                 """))
-                .andExpect(status().isConflict())
+                .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.exitoso").value(false))
                 .andExpect(jsonPath("$.mensaje").value("El convenio requiere las 3 firmas confirmadas"));
     }
