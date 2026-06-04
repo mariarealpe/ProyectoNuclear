@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,6 +43,7 @@ public class PracticaSprint3Service {
     private final UsuarioRepository usuarioRepository;
     private final AsignacionService asignacionService;
     private final NotificacionSprint3Service notificacionService;
+    private final PracticaSprint3Mapper mapper;
 
     @Transactional
     public Map<String, Object> prepararDesdeAsignacion(Long asignacionId, Long usuarioId) {
@@ -78,7 +78,7 @@ public class PracticaSprint3Service {
                 usuario
         );
 
-        return toMap(practicaRepository.save(practica));
+        return mapper.toMap(practicaRepository.save(practica));
     }
 
     @Transactional
@@ -133,20 +133,20 @@ public class PracticaSprint3Service {
                 practica.getId()
         );
 
-        return toMap(practicaRepository.save(practica));
+        return mapper.toMap(practicaRepository.save(practica));
     }
 
     @Transactional(readOnly = true)
     public List<Map<String, Object>> listarPorEstudiante(Long estudianteId) {
         return practicaRepository.findByEstudiante_IdOrderByCreadoEnDesc(estudianteId)
                 .stream()
-                .map(this::toMap)
+                .map(mapper::toMap)
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public Map<String, Object> obtener(Long id) {
-        return toMap(buscar(id));
+        return mapper.toMap(buscar(id));
     }
 
     public Practica buscar(Long id) {
@@ -154,20 +154,4 @@ public class PracticaSprint3Service {
                 .orElseThrow(() -> new RecursoNoEncontradoException("Practica no encontrada"));
     }
 
-    public Map<String, Object> toMap(Practica p) {
-        Map<String, Object> map = new LinkedHashMap<>();
-        map.put("id", p.getId());
-        map.put("estudianteId", p.getEstudiante().getId());
-        map.put("estudiante", p.getEstudiante().getNombre());
-        map.put("programaId", p.getPrograma().getId());
-        map.put("numeroPractica", p.getNumeroPractica());
-        map.put("nombre", p.getNombre());
-        map.put("estado", p.getEstado());
-        map.put("docenteAsesorId", p.getDocenteAsesor() == null ? null : p.getDocenteAsesor().getId());
-        map.put("docenteAsesor",   p.getDocenteAsesor() == null ? null : p.getDocenteAsesor().getNombre());
-        map.put("documentosRequeridos", p.getDocumentosRequeridos());
-        map.put("creadoEn", p.getCreadoEn());
-        map.put("actualizadoEn", p.getActualizadoEn());
-        return map;
-    }
 }
