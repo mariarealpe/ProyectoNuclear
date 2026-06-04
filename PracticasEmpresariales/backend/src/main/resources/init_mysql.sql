@@ -853,3 +853,28 @@ CREATE TABLE IF NOT EXISTS plantillas_notificacion (
     PRIMARY KEY (id),
     UNIQUE KEY uq_plantilla_evento (evento)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ----------------------------------------------------------------
+-- TABLA: encuestas  (RF-08-05 / RF-08-06 — una por (practica, tipo))
+-- ----------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS encuestas (
+    id                       BIGINT       NOT NULL AUTO_INCREMENT,
+    practica_id              BIGINT       NOT NULL,
+    tipo                     VARCHAR(40)  NOT NULL,
+    destinatario_id          BIGINT       NOT NULL,
+    estado                   VARCHAR(20)  NOT NULL DEFAULT 'PENDIENTE',
+    respuestas_json          LONGTEXT              DEFAULT NULL,
+    ultimo_recordatorio_en   DATETIME              DEFAULT NULL,
+    invitacion_enviada_en    DATETIME              DEFAULT NULL,
+    completada_en            DATETIME              DEFAULT NULL,
+    creado_en                DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en           DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_encuesta_practica_tipo (practica_id, tipo),
+    KEY idx_encuesta_estado       (estado),
+    KEY idx_encuesta_destinatario (destinatario_id),
+    CONSTRAINT fk_encuesta_practica     FOREIGN KEY (practica_id)     REFERENCES practicas (id),
+    CONSTRAINT fk_encuesta_destinatario FOREIGN KEY (destinatario_id) REFERENCES usuarios  (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

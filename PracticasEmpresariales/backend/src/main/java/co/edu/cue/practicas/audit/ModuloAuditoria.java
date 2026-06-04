@@ -50,4 +50,7 @@ public final class ModuloAuditoria {
 
     /** Módulo de plantillas y notificaciones por correo — RF-11-05 */
     public static final String NOTIFICACIONES = "NOTIFICACIONES";
+
+    /** Módulo de encuestas de cierre y autoevaluación — RF-08-05, RF-08-06 */
+    public static final String ENCUESTAS = "ENCUESTAS";
 }
