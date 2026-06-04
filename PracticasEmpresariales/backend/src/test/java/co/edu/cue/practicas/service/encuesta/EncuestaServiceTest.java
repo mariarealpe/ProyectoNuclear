@@ -125,8 +125,6 @@ class EncuestaServiceTest {
     void deberiaFallarSiTutorNoEstaAsignadoEnLaPractica() {
         practica.setTutorEmpresarial(null);
         when(practicaRepository.findById(7L)).thenReturn(Optional.of(practica));
-        when(encuestaRepository.findByPractica_IdAndTipo(7L, TipoEncuesta.TUTOR_SATISFACCION))
-                .thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.iniciarFaseCierre(7L))
                 .isInstanceOf(OperacionNoPermitidaException.class)

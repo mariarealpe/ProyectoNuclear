@@ -12,6 +12,8 @@ import co.edu.cue.practicas.model.enums.TipoFirmante;
 import co.edu.cue.practicas.repository.practica.DocumentoPracticaRepository;
 import co.edu.cue.practicas.repository.practica.FirmaDocumentoRepository;
 import co.edu.cue.practicas.repository.usuario.UsuarioRepository;
+import co.edu.cue.practicas.service.practica.DocumentoPracticaValidator;
+import co.edu.cue.practicas.service.practica.DocumentoPracticaMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,10 +51,8 @@ class DocumentoPracticaServiceTest {
     @BeforeEach
     void configurar() {
         documentoService = new DocumentoPracticaService(
-                documentoRepository,
-                firmaRepository,
-                usuarioRepository,
-                practicaService);
+                documentoRepository, firmaRepository, usuarioRepository, practicaService,
+                new DocumentoPracticaValidator(), new DocumentoPracticaMapper());
     }
 
     @Test

@@ -134,7 +134,7 @@ class UsuarioControllerTest {
                 .desactivarUsuario(eq(1L), nullable(CustomUserDetails.class));
 
         mockMvc.perform(patch("/usuarios/{id}/desactivar", 1L))
-                .andExpect(status().isConflict())
+                .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.exitoso").value(false))
                 .andExpect(jsonPath("$.mensaje").value("No se puede desactivar al unico Administrador DTI activo"));
     }

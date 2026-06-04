@@ -71,6 +71,7 @@ public class PracticaSprint3Controller {
 
     private Long longValue(Map<String, Object> request, String key) {
         Object value = request.get(key);
+        if (value == null) return null;
         if (value instanceof Number number) {
             return number.longValue();
         }

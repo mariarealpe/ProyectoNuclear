@@ -140,7 +140,7 @@ class DocumentoPracticaControllerTest {
                                   "usuarioId": 99
                                 }
                                 """))
-                .andExpect(status().isConflict())
+                .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.exitoso").value(false))
                 .andExpect(jsonPath("$.mensaje").value("El usuario no corresponde al firmante registrado"));
     }

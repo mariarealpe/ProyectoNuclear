@@ -187,7 +187,7 @@ class VacanteControllerTest {
         mockMvc.perform(patch("/vacantes/{id}/rechazar", 20L)
                         .contentType(APPLICATION_JSON)
                         .content("{}"))
-                .andExpect(status().isConflict())
+                .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.exitoso").value(false))
                 .andExpect(jsonPath("$.mensaje").value("El motivo del rechazo es obligatorio."));
     }

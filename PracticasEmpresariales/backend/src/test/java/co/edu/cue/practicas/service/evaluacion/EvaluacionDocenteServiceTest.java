@@ -281,7 +281,7 @@ class EvaluacionDocenteServiceTest {
         assertThatThrownBy(() -> service.actualizar(1L,
                 DatosDePrueba.registrarEvaluacionRequest(4.0, "obs"), docenteDetails))
                 .isInstanceOf(OperacionNoPermitidaException.class)
-                .hasMessageContaining("cerrada");
+                .hasMessageContaining("EN_CURSO");
 
         verify(evaluacionRepository, never()).save(any());
     }

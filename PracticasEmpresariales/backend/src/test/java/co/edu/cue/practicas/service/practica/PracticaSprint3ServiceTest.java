@@ -65,13 +65,7 @@ class PracticaSprint3ServiceTest {
 
     @BeforeEach
     void configurar() {
-        practicaService = new PracticaSprint3Service(
-                practicaRepository,
-                asignacionRepository,
-                documentoRepository,
-                usuarioRepository,
-                asignacionService,
-                notificacionService);
+        practicaService = new PracticaSprint3Service(practicaRepository, asignacionRepository, documentoRepository, usuarioRepository, asignacionService, notificacionService, new PracticaSprint3Mapper());
     }
 
     @Test
@@ -122,17 +116,19 @@ class PracticaSprint3ServiceTest {
         Practica practica = practica(EstadoPractica.PENDIENTE_ASIGNACION);
         Asignacion asignacion = asignacion(EstadoAsignacion.EN_VINCULACION);
         Usuario usuario = usuario(30L, "Coordinador Practicas", Rol.COORDINADOR_PRACTICAS);
+        Usuario docenteAsesor = usuario(40L, "Docente Asesor", Rol.DOCENTE_ASESOR);
         LocalDateTime inicio = LocalDateTime.parse("2026-06-10T08:00:00");
         LocalDateTime fin = LocalDateTime.parse("2026-12-10T17:00:00");
         when(practicaRepository.findById(50L)).thenReturn(Optional.of(practica));
         when(usuarioRepository.findById(30L)).thenReturn(Optional.of(usuario));
+        when(usuarioRepository.findById(40L)).thenReturn(Optional.of(docenteAsesor));
         when(asignacionRepository.findFirstByEstudiante_IdOrderByFechaAsignacionDesc(10L))
                 .thenReturn(Optional.of(asignacion));
         when(documentoRepository.findByPractica_IdAndTipo(50L, TipoDocumento.CONVENIO))
                 .thenReturn(List.of(convenioFirmado(practica)));
         when(practicaRepository.save(any(Practica.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Map<String, Object> response = practicaService.confirmarVinculacion(50L, 30L, inicio, fin);
+        Map<String, Object> response = practicaService.confirmarVinculacion(50L, 30L, 40L, inicio, fin);
 
         assertThat(response.get("estado")).isEqualTo(EstadoPractica.EN_CURSO);
         assertThat(practica.getEstado()).isEqualTo(EstadoPractica.EN_CURSO);
@@ -166,7 +162,7 @@ class PracticaSprint3ServiceTest {
         when(documentoRepository.findByPractica_IdAndTipo(50L, TipoDocumento.CONVENIO))
                 .thenReturn(List.of());
 
-        assertThatThrownBy(() -> practicaService.confirmarVinculacion(50L, 30L, null, null))
+        assertThatThrownBy(() -> practicaService.confirmarVinculacion(50L, 30L, 40L, null, null))
                 .isInstanceOf(OperacionNoPermitidaException.class)
                 .hasMessageContaining("Debe existir un convenio");
 
@@ -191,7 +187,7 @@ class PracticaSprint3ServiceTest {
         when(documentoRepository.findByPractica_IdAndTipo(50L, TipoDocumento.CONVENIO))
                 .thenReturn(List.of(convenio));
 
-        assertThatThrownBy(() -> practicaService.confirmarVinculacion(50L, 30L, null, null))
+        assertThatThrownBy(() -> practicaService.confirmarVinculacion(50L, 30L, 40L, null, null))
                 .isInstanceOf(OperacionNoPermitidaException.class)
                 .hasMessageContaining("3 firmas confirmadas");
 

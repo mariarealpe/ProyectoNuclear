@@ -168,7 +168,7 @@ class TutorEmpresarialControllerTest {
                                   "cargo": "Lider de Desarrollo"
                                 }
                                 """))
-                .andExpect(status().isConflict())
+                .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.exitoso").value(false))
                 .andExpect(jsonPath("$.mensaje").value("No se pueden crear tutores para una empresa desactivada."));
     }

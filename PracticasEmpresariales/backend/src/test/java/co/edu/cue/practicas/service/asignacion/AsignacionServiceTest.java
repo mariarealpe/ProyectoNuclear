@@ -2,7 +2,6 @@ package co.edu.cue.practicas.service.asignacion;
 
 import co.edu.cue.practicas.exception.OperacionNoPermitidaException;
 import co.edu.cue.practicas.model.entity.Asignacion;
-import co.edu.cue.practicas.model.entity.CambioEstadoAsignacion;
 import co.edu.cue.practicas.model.entity.Usuario;
 import co.edu.cue.practicas.model.entity.Vacante;
 import co.edu.cue.practicas.model.enums.EstadoAsignacion;
@@ -11,7 +10,6 @@ import co.edu.cue.practicas.model.enums.EstadoVacante;
 import co.edu.cue.practicas.model.enums.Rol;
 import co.edu.cue.practicas.model.enums.TipoNotificacion;
 import co.edu.cue.practicas.repository.asignacion.AsignacionRepository;
-import co.edu.cue.practicas.repository.asignacion.CambioEstadoAsignacionRepository;
 import co.edu.cue.practicas.repository.usuario.UsuarioRepository;
 import co.edu.cue.practicas.repository.vacante.VacanteRepository;
 import co.edu.cue.practicas.service.notificacion.NotificacionSprint3Service;
@@ -45,13 +43,13 @@ class AsignacionServiceTest {
     private AsignacionRepository asignacionRepository;
 
     @Mock
-    private CambioEstadoAsignacionRepository cambioRepository;
-
-    @Mock
     private UsuarioRepository usuarioRepository;
 
     @Mock
     private VacanteRepository vacanteRepository;
+
+    @Mock
+    private AsignacionTrazabilidadService trazabilidadService;
 
     @Mock
     private NotificacionSprint3Service notificacionService;
@@ -60,11 +58,15 @@ class AsignacionServiceTest {
 
     @BeforeEach
     void configurar() {
+        AsignacionValidator realValidator = new AsignacionValidator(asignacionRepository);
         asignacionService = new AsignacionService(
                 asignacionRepository,
-                cambioRepository,
                 usuarioRepository,
                 vacanteRepository,
+                realValidator,
+                new AsignacionEstadoService(realValidator),
+                trazabilidadService,
+                new AsignacionMapper(),
                 notificacionService);
     }
 
@@ -89,7 +91,7 @@ class AsignacionServiceTest {
         assertThat(response.get("estado")).isEqualTo(EstadoAsignacion.ASIGNADA);
         assertThat(vacante.getCuposOcupados()).isEqualTo(1);
         assertThat(vacante.getEstado()).isEqualTo(EstadoVacante.CERRADA);
-        verify(cambioRepository).save(any(CambioEstadoAsignacion.class));
+        verify(trazabilidadService).registrarCambio(any(), any(), any(), any(), any());
         verify(notificacionService).registrar(
                 eq(10L),
                 eq(TipoNotificacion.ASIGNACION_CREADA),
@@ -113,7 +115,7 @@ class AsignacionServiceTest {
                 .hasMessageContaining("APTO");
 
         verify(asignacionRepository, never()).save(any());
-        verify(cambioRepository, never()).save(any());
+        verify(trazabilidadService, never()).registrarCambio(any(), any(), any(), any(), any());
         verify(notificacionService, never()).registrar(any(), any(), any(), any(), any(), any());
     }
 
@@ -138,7 +140,7 @@ class AsignacionServiceTest {
         assertThat(response.get("motivoCancelacion")).isEqualTo("La empresa cancelo la vacante");
         assertThat(asignacion.getVacante().getCuposOcupados()).isEqualTo(1);
         assertThat(asignacion.getVacante().getEstado()).isEqualTo(EstadoVacante.DISPONIBLE);
-        verify(cambioRepository).save(any(CambioEstadoAsignacion.class));
+        verify(trazabilidadService).registrarCambio(any(), any(), any(), any(), any());
         verify(notificacionService).registrar(
                 eq(10L),
                 eq(TipoNotificacion.ASIGNACION_CANCELADA),
@@ -164,7 +166,7 @@ class AsignacionServiceTest {
                 .hasMessageContaining("Transicion de estado no permitida");
 
         verify(asignacionRepository, never()).save(any());
-        verify(cambioRepository, never()).save(any());
+        verify(trazabilidadService, never()).registrarCambio(any(), any(), any(), any(), any());
         verify(notificacionService, never()).registrar(any(), any(), any(), any(), any(), any());
     }
 

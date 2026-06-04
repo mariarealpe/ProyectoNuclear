@@ -97,7 +97,7 @@ class NotaFinalControllerTest {
                         .content("""
                                 { "nota": 4.0 }
                                 """))
-                .andExpect(status().isConflict())
+                .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.mensaje").value("falta la evaluación del Docente Asesor"));
     }
 
@@ -142,7 +142,7 @@ class NotaFinalControllerTest {
                         .content("""
                                 { "nota": 4.0 }
                                 """))
-                .andExpect(status().isConflict());
+                .andExpect(status().isUnprocessableEntity());
     }
 
     // =========================================================================
@@ -167,7 +167,7 @@ class NotaFinalControllerTest {
                 .thenThrow(new OperacionNoPermitidaException("La nota final ya está cerrada"));
 
         mockMvc.perform(post("/notas-finales/{id}/cerrar", 99L))
-                .andExpect(status().isConflict());
+                .andExpect(status().isUnprocessableEntity());
     }
 
     // =========================================================================

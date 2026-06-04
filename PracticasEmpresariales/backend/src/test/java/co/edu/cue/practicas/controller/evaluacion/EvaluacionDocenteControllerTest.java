@@ -205,7 +205,7 @@ class EvaluacionDocenteControllerTest {
                 .andExpect(jsonPath("$.exitoso").value(true))
                 .andExpect(jsonPath("$.datos.nota").value(4.0))
                 .andExpect(jsonPath("$.datos.resultado").value("APROBADO"))
-                .andExpect(jsonPath("$.datos.docenteNombre").value("Docente Asesor"));
+                .andExpect(jsonPath("$.datos.nombreDocente").value("Docente Asesor"));
     }
 
     @Test

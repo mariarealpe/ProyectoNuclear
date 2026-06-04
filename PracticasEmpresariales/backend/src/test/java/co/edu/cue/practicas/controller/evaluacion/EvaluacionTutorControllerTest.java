@@ -113,7 +113,7 @@ class EvaluacionTutorControllerTest {
                         .content("""
                                 {"nota": 4.0, "observaciones": "obs"}
                                 """))
-                .andExpect(status().isConflict())
+                .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.exitoso").value(false));
     }
 
@@ -173,7 +173,7 @@ class EvaluacionTutorControllerTest {
                         .content("""
                                 {"nota": 4.0, "observaciones": "obs"}
                                 """))
-                .andExpect(status().isConflict());
+                .andExpect(status().isUnprocessableEntity());
     }
 
     // =========================================================================

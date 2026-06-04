@@ -97,7 +97,7 @@ class SeguimientoPracticaControllerTest {
                                   "estado": "PENDIENTE"
                                 }
                                 """))
-                .andExpect(status().isConflict())
+                .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.exitoso").value(false))
                 .andExpect(jsonPath("$.mensaje").value("La revision debe aprobar o rechazar el seguimiento"));
     }
