@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -43,4 +44,17 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
             Pageable pageable);
 
     Page<Usuario> findByFacultad_IdAndActivoTrue(Long facultadId, Pageable pageable);
+
+    /** Usuarios activos por rol y facultad (notificaciones a Coordinación Académica — RF-09-03). */
+    List<Usuario> findByRolAndFacultad_IdAndActivoTrue(Rol rol, Long facultadId);
+
+    // ====== Agregaciones para reportes RF-10-01 / RF-10-04 ======
+
+    long countByRolAndEstadoEstudianteAndPrograma_Id(
+            Rol rol, EstadoEstudiante estado, Long programaId);
+
+    long countByRolAndEstadoEstudianteAndPrograma_Facultad_Id(
+            Rol rol, EstadoEstudiante estado, Long facultadId);
+
+    long countByRolAndEstadoEstudiante(Rol rol, EstadoEstudiante estado);
 }

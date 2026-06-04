@@ -2,21 +2,20 @@ package co.edu.cue.practicas.service.evaluacion;
 
 import co.edu.cue.practicas.audit.ModuloAuditoria;
 import co.edu.cue.practicas.audit.singleton.AuditoriaLogger;
-import co.edu.cue.practicas.dto.request.RegistrarEvaluacionDocenteRequest;
-import co.edu.cue.practicas.dto.response.EvaluacionDocenteResponse;
+import co.edu.cue.practicas.dto.request.RegistrarEvaluacionTutorRequest;
+import co.edu.cue.practicas.dto.response.EvaluacionTutorResponse;
 import co.edu.cue.practicas.exception.AccesoNoAutorizadoException;
 import co.edu.cue.practicas.exception.OperacionNoPermitidaException;
 import co.edu.cue.practicas.exception.RecursoNoEncontradoException;
 import co.edu.cue.practicas.model.entity.BitacoraAuditoria;
-import co.edu.cue.practicas.model.entity.ConfiguracionPrograma;
-import co.edu.cue.practicas.model.entity.EvaluacionDocente;
+import co.edu.cue.practicas.model.entity.EvaluacionTutor;
 import co.edu.cue.practicas.model.entity.Practica;
 import co.edu.cue.practicas.model.enums.EstadoPractica;
 import co.edu.cue.practicas.model.enums.ResultadoEvaluacion;
 import co.edu.cue.practicas.model.enums.Rol;
 import co.edu.cue.practicas.model.enums.TipoAccion;
 import co.edu.cue.practicas.repository.configuracion.ConfiguracionProgramaRepository;
-import co.edu.cue.practicas.repository.evaluacion.EvaluacionDocenteRepository;
+import co.edu.cue.practicas.repository.evaluacion.EvaluacionTutorRepository;
 import co.edu.cue.practicas.repository.practica.PracticaRepository;
 import co.edu.cue.practicas.security.CustomUserDetails;
 import co.edu.cue.practicas.security.annotation.RequiereRol;
@@ -28,54 +27,60 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Map;
 
 /**
- * RF-08-01 — Registro de nota del Docente Asesor.
+ * RF-08-02 — Registro de nota del Tutor Empresarial.
  *
- * Solo el Docente Asesor formalmente asignado a la práctica puede registrar
- * o modificar su evaluación. La nota se valida contra ConfiguracionPrograma
- * del programa correspondiente y determina APROBADO o DESAPROBADO.
+ * Patrones:
+ *  - Template Method: mismo flujo de validación y cálculo que el docente.
+ *  - Adapter: el portal externo del tutor consume esta API interna.
+ *  - Proxy: tras el cierre del Coordinador (Practica.notasCerradas = true),
+ *    cualquier intento de modificación es rechazado.
+ *
+ * Solo el Tutor Empresarial formalmente asignado a la práctica
+ * (Practica.tutorEmpresarial) puede registrar o modificar su evaluación.
  */
 @Service
 @RequiredArgsConstructor
-public class EvaluacionDocenteService {
+public class EvaluacionTutorService {
 
-    private final EvaluacionDocenteRepository evaluacionRepository;
+    private final EvaluacionTutorRepository evaluacionRepository;
     private final PracticaRepository practicaRepository;
     private final ConfiguracionProgramaRepository configuracionRepository;
     private final AuditoriaLogger auditoriaLogger;
     private final ObjectMapper objectMapper;
 
     /**
-     * Registra la evaluación del Docente Asesor para una práctica EN_CURSO.
-     * Solo puede ejecutarlo el docente asignado en Practica.docenteAsesor.
+     * Registra la evaluación del Tutor Empresarial para una práctica EN_CURSO.
+     * Solo puede ejecutarlo el tutor asignado en Practica.tutorEmpresarial.
      * Solo se permite una evaluación por práctica.
      */
-    @RequiereRol(roles = {Rol.DOCENTE_ASESOR})
+    @RequiereRol(roles = {Rol.TUTOR_EMPRESARIAL})
     @Transactional
-    public EvaluacionDocenteResponse registrar(
+    public EvaluacionTutorResponse registrar(
             Long practicaId,
-            RegistrarEvaluacionDocenteRequest request,
-            CustomUserDetails docente) {
+            RegistrarEvaluacionTutorRequest request,
+            CustomUserDetails tutor) {
 
         Practica practica = buscarPractica(practicaId);
         validarPracticaEnCurso(practica);
-        validarDocenteAsignado(practica, docente);
+        validarNotasNoCerradas(practica);
+        validarTutorAsignado(practica, tutor);
 
         if (evaluacionRepository.existsByPractica_Id(practicaId)) {
             throw new OperacionNoPermitidaException(
-                    "Ya existe una evaluación registrada para la práctica " + practicaId);
+                    "Ya existe una evaluación de tutor registrada para la práctica " + practicaId);
         }
 
         double[] rangos = cargarRangos(practica);
-        double notaMaxima  = rangos[0];
-        double notaMinima  = rangos[1];
+        double notaMaxima = rangos[0];
+        double notaMinima = rangos[1];
 
         validarRangoNota(request.getNota(), notaMaxima);
 
         ResultadoEvaluacion resultado = calcularResultado(request.getNota(), notaMinima);
 
-        EvaluacionDocente evaluacion = EvaluacionDocente.builder()
+        EvaluacionTutor evaluacion = EvaluacionTutor.builder()
                 .practica(practica)
-                .docente(docente.getUsuario())
+                .tutor(tutor.getUsuario())
                 .nota(request.getNota())
                 .resultado(resultado)
                 .observaciones(request.getObservaciones())
@@ -83,38 +88,39 @@ public class EvaluacionDocenteService {
 
         evaluacion = evaluacionRepository.save(evaluacion);
 
-        auditoriaLogger.registrar(iniciarAuditoria(docente)
-                .modulo(ModuloAuditoria.EVALUACIONES_DOCENTE)
+        auditoriaLogger.registrar(iniciarAuditoria(tutor)
+                .modulo(ModuloAuditoria.EVALUACIONES_TUTOR)
                 .tipoAccion(TipoAccion.CREAR)
                 .registroAfectadoId(evaluacion.getId())
-                .registroAfectadoTipo("EvaluacionDocente")
+                .registroAfectadoTipo("EvaluacionTutor")
                 .valoresNuevos(toJson(Map.of(
                         "practicaId", practicaId,
                         "nota", request.getNota(),
                         "resultado", resultado)))
                 .exitoso(true));
 
-        return EvaluacionDocenteResponse.desde(evaluacion);
+        return EvaluacionTutorResponse.desde(evaluacion);
     }
 
     /**
-     * Actualiza la evaluación existente mientras la práctica siga EN_CURSO.
-     * Solo puede ejecutarlo el mismo docente que la registró.
+     * Actualiza la evaluación existente mientras la práctica siga EN_CURSO
+     * y el Coordinador no haya cerrado las notas.
+     * Solo puede ejecutarlo el mismo tutor que la registró.
      */
-    @RequiereRol(roles = {Rol.DOCENTE_ASESOR})
+    @RequiereRol(roles = {Rol.TUTOR_EMPRESARIAL})
     @Transactional
-    public EvaluacionDocenteResponse actualizar(
+    public EvaluacionTutorResponse actualizar(
             Long evaluacionId,
-            RegistrarEvaluacionDocenteRequest request,
-            CustomUserDetails docente) {
+            RegistrarEvaluacionTutorRequest request,
+            CustomUserDetails tutor) {
 
-        EvaluacionDocente evaluacion = evaluacionRepository.findById(evaluacionId)
+        EvaluacionTutor evaluacion = evaluacionRepository.findById(evaluacionId)
                 .orElseThrow(() -> new RecursoNoEncontradoException(
                         "Evaluación no encontrada: " + evaluacionId));
 
-        if (!evaluacion.getDocente().getId().equals(docente.getUsuario().getId())) {
+        if (!evaluacion.getTutor().getId().equals(tutor.getUsuario().getId())) {
             throw new AccesoNoAutorizadoException(
-                    "Solo el docente que registró la evaluación puede modificarla");
+                    "Solo el tutor que registró la evaluación puede modificarla");
         }
 
         validarPracticaEnCurso(evaluacion.getPractica());
@@ -137,11 +143,11 @@ public class EvaluacionDocenteService {
         evaluacion.setObservaciones(request.getObservaciones());
         evaluacion = evaluacionRepository.save(evaluacion);
 
-        auditoriaLogger.registrar(iniciarAuditoria(docente)
-                .modulo(ModuloAuditoria.EVALUACIONES_DOCENTE)
+        auditoriaLogger.registrar(iniciarAuditoria(tutor)
+                .modulo(ModuloAuditoria.EVALUACIONES_TUTOR)
                 .tipoAccion(TipoAccion.EDITAR)
                 .registroAfectadoId(evaluacion.getId())
-                .registroAfectadoTipo("EvaluacionDocente")
+                .registroAfectadoTipo("EvaluacionTutor")
                 .valoresAnteriores(antes)
                 .valoresNuevos(toJson(Map.of(
                         "nota", request.getNota(),
@@ -149,28 +155,25 @@ public class EvaluacionDocenteService {
                         "observaciones", request.getObservaciones())))
                 .exitoso(true));
 
-        return EvaluacionDocenteResponse.desde(evaluacion);
+        return EvaluacionTutorResponse.desde(evaluacion);
     }
 
     /**
-     * Obtiene la evaluación docente de una práctica.
-     * Accesible para DOCENTE_ASESOR (propias), COORDINADOR_PRACTICAS y ADMIN_DTI.
+     * Obtiene la evaluación del tutor de una práctica.
+     * Accesible para TUTOR_EMPRESARIAL (propias), COORDINADOR_PRACTICAS y ADMIN_DTI.
      */
     @Transactional(readOnly = true)
-    public EvaluacionDocenteResponse obtenerPorPractica(Long practicaId) {
+    public EvaluacionTutorResponse obtenerPorPractica(Long practicaId) {
         return evaluacionRepository.findByPractica_Id(practicaId)
-                .map(EvaluacionDocenteResponse::desde)
+                .map(EvaluacionTutorResponse::desde)
                 .orElseThrow(() -> new RecursoNoEncontradoException(
-                        "No existe evaluación para la práctica: " + practicaId));
+                        "No existe evaluación de tutor para la práctica: " + practicaId));
     }
 
-    /**
-     * Obtiene una evaluación por su ID.
-     */
     @Transactional(readOnly = true)
-    public EvaluacionDocenteResponse obtenerPorId(Long evaluacionId) {
+    public EvaluacionTutorResponse obtenerPorId(Long evaluacionId) {
         return evaluacionRepository.findById(evaluacionId)
-                .map(EvaluacionDocenteResponse::desde)
+                .map(EvaluacionTutorResponse::desde)
                 .orElseThrow(() -> new RecursoNoEncontradoException(
                         "Evaluación no encontrada: " + evaluacionId));
     }
@@ -193,10 +196,6 @@ public class EvaluacionDocenteService {
         }
     }
 
-    /**
-     * RF-08-04: una vez que el Coordinador ejecuta el cierre, todas las notas
-     * (docente, tutor y final) quedan inmutables — Patrón Proxy.
-     */
     private void validarNotasNoCerradas(Practica practica) {
         if (Boolean.TRUE.equals(practica.getNotasCerradas())) {
             throw new OperacionNoPermitidaException(
@@ -204,19 +203,17 @@ public class EvaluacionDocenteService {
         }
     }
 
-    private void validarDocenteAsignado(Practica practica, CustomUserDetails docente) {
-        if (practica.getDocenteAsesor() == null ||
-            !practica.getDocenteAsesor().getId().equals(docente.getUsuario().getId())) {
+    private void validarTutorAsignado(Practica practica, CustomUserDetails tutor) {
+        if (practica.getTutorEmpresarial() == null ||
+            !practica.getTutorEmpresarial().getId().equals(tutor.getUsuario().getId())) {
             throw new AccesoNoAutorizadoException(
-                    "Solo el Docente Asesor asignado a la práctica puede registrar la evaluación");
+                    "Solo el Tutor Empresarial asignado a la práctica puede registrar la evaluación");
         }
     }
 
     /**
      * Carga notaMaxima y notaMinimaAprobacion desde ConfiguracionPrograma.
      * Si el programa no tiene configuración, usa los valores por defecto del dominio.
-     *
-     * @return double[0] = notaMaxima, double[1] = notaMinimaAprobacion
      */
     private double[] cargarRangos(Practica practica) {
         return configuracionRepository

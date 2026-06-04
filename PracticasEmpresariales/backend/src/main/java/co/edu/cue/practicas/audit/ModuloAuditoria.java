@@ -41,4 +41,19 @@ public final class ModuloAuditoria {
 
     /** Módulo de evaluaciones del Docente Asesor — RF-08-01 */
     public static final String EVALUACIONES_DOCENTE = "EVALUACIONES_DOCENTE";
+
+    /** Módulo de evaluaciones del Tutor Empresarial — RF-08-02 */
+    public static final String EVALUACIONES_TUTOR = "EVALUACIONES_TUTOR";
+
+    /** Módulo de la nota final registrada por el Coordinador — RF-08-04 */
+    public static final String NOTA_FINAL = "NOTA_FINAL";
+
+    /** Módulo de plantillas y notificaciones por correo — RF-11-05 */
+    public static final String NOTIFICACIONES = "NOTIFICACIONES";
+
+    /** Módulo de encuestas de cierre y autoevaluación — RF-08-05, RF-08-06 */
+    public static final String ENCUESTAS = "ENCUESTAS";
+
+    /** Módulo del cierre formal de práctica — RF-09-02, RF-09-03 */
+    public static final String CIERRE_PRACTICA = "CIERRE_PRACTICA";
 }

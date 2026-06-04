@@ -10,7 +10,8 @@ import java.time.LocalDateTime;
 @Table(name = "practicas", indexes = {
         @Index(name = "idx_practica_estudiante", columnList = "estudiante_id"),
         @Index(name = "idx_practica_estado",     columnList = "estado"),
-        @Index(name = "idx_practica_docente",    columnList = "docente_asesor_id")
+        @Index(name = "idx_practica_docente",    columnList = "docente_asesor_id"),
+        @Index(name = "idx_practica_tutor",      columnList = "tutor_empresarial_id")
 })
 @Getter
 @Setter
@@ -35,6 +36,17 @@ public class Practica {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "docente_asesor_id")
     private Usuario docenteAsesor;
+
+    /**
+     * Tutor Empresarial (Usuario con rol TUTOR_EMPRESARIAL) responsable del
+     * acompañamiento en la empresa. Se asigna al confirmar la vinculación y
+     * se denormaliza desde Asignacion.vacante.tutor.usuario para acceso directo
+     * desde las evaluaciones (RF-08-02). Nullable para compatibilidad con
+     * prácticas creadas antes de este campo.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tutor_empresarial_id")
+    private Usuario tutorEmpresarial;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "programa_id", nullable = false)
@@ -64,6 +76,15 @@ public class Practica {
     @Column(nullable = false, length = 30)
     @Builder.Default
     private EstadoPractica estado = EstadoPractica.PENDIENTE_ASIGNACION;
+
+    /**
+     * Indica si el Coordinador ya ejecutó el cierre de evaluación (RF-08-04).
+     * Una vez true, las notas del Docente Asesor, Tutor Empresarial y la nota
+     * final quedan inmutables (Patrón Proxy aplicado en los servicios).
+     */
+    @Column(name = "notas_cerradas", nullable = false)
+    @Builder.Default
+    private Boolean notasCerradas = false;
 
     @Column(nullable = false, updatable = false)
     @Builder.Default

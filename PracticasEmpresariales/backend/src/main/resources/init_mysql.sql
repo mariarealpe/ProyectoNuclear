@@ -255,11 +255,13 @@ CREATE TABLE IF NOT EXISTS practicas (
     expediente_id         BIGINT                DEFAULT NULL,
     catalogo_id           BIGINT                DEFAULT NULL,
     docente_asesor_id     BIGINT                DEFAULT NULL,
+    tutor_empresarial_id  BIGINT                DEFAULT NULL,
     numero_practica       INT          NOT NULL,
     nombre                VARCHAR(200) NOT NULL,
     descripcion           VARCHAR(1000)         DEFAULT NULL,
     documentos_requeridos VARCHAR(1000)         DEFAULT NULL,
     estado                VARCHAR(30)  NOT NULL DEFAULT 'PENDIENTE_ASIGNACION',
+    notas_cerradas        TINYINT(1)   NOT NULL DEFAULT 0,
     creado_en             DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     actualizado_en        DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
@@ -267,11 +269,13 @@ CREATE TABLE IF NOT EXISTS practicas (
     KEY idx_practica_estudiante (estudiante_id),
     KEY idx_practica_estado     (estado),
     KEY idx_practica_docente    (docente_asesor_id),
-    CONSTRAINT fk_practica_estudiante  FOREIGN KEY (estudiante_id)    REFERENCES usuarios (id),
-    CONSTRAINT fk_practica_programa    FOREIGN KEY (programa_id)      REFERENCES programas (id),
-    CONSTRAINT fk_practica_expediente  FOREIGN KEY (expediente_id)    REFERENCES expedientes (id),
-    CONSTRAINT fk_practica_catalogo    FOREIGN KEY (catalogo_id)      REFERENCES practicas_catalogo (id),
-    CONSTRAINT fk_practica_docente     FOREIGN KEY (docente_asesor_id) REFERENCES usuarios (id)
+    KEY idx_practica_tutor      (tutor_empresarial_id),
+    CONSTRAINT fk_practica_estudiante  FOREIGN KEY (estudiante_id)        REFERENCES usuarios (id),
+    CONSTRAINT fk_practica_programa    FOREIGN KEY (programa_id)          REFERENCES programas (id),
+    CONSTRAINT fk_practica_expediente  FOREIGN KEY (expediente_id)        REFERENCES expedientes (id),
+    CONSTRAINT fk_practica_catalogo    FOREIGN KEY (catalogo_id)          REFERENCES practicas_catalogo (id),
+    CONSTRAINT fk_practica_docente     FOREIGN KEY (docente_asesor_id)    REFERENCES usuarios (id),
+    CONSTRAINT fk_practica_tutor       FOREIGN KEY (tutor_empresarial_id) REFERENCES usuarios (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
@@ -766,3 +770,111 @@ ALTER TABLE practicas
 ALTER TABLE practicas
     ADD CONSTRAINT IF NOT EXISTS fk_practica_docente
         FOREIGN KEY (docente_asesor_id) REFERENCES usuarios (id);
+
+
+-- ----------------------------------------------------------------
+-- RF-08-02 base: relación formal Practica ↔ Tutor Empresarial
+-- ----------------------------------------------------------------
+ALTER TABLE practicas
+    ADD COLUMN IF NOT EXISTS tutor_empresarial_id BIGINT DEFAULT NULL,
+    ADD KEY IF NOT EXISTS idx_practica_tutor (tutor_empresarial_id);
+
+ALTER TABLE practicas
+    ADD CONSTRAINT IF NOT EXISTS fk_practica_tutor
+        FOREIGN KEY (tutor_empresarial_id) REFERENCES usuarios (id);
+
+
+-- ----------------------------------------------------------------
+-- RF-08-04 base: flag de cierre de notas (inmutabilidad — Proxy)
+-- ----------------------------------------------------------------
+ALTER TABLE practicas
+    ADD COLUMN IF NOT EXISTS notas_cerradas TINYINT(1) NOT NULL DEFAULT 0;
+
+
+-- ----------------------------------------------------------------
+-- TABLA: evaluaciones_tutor  (RF-08-02 — una evaluación por práctica)
+-- ----------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS evaluaciones_tutor (
+    id              BIGINT      NOT NULL AUTO_INCREMENT,
+    practica_id     BIGINT      NOT NULL,
+    tutor_id        BIGINT      NOT NULL,
+    nota            DOUBLE      NOT NULL,
+    resultado       VARCHAR(20) NOT NULL,
+    observaciones   LONGTEXT    NOT NULL,
+    creado_en       DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en  DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_eval_tutor_practica (practica_id),
+    KEY idx_eval_tutor (tutor_id),
+    CONSTRAINT fk_eval_tutor_practica FOREIGN KEY (practica_id) REFERENCES practicas (id),
+    CONSTRAINT fk_eval_tutor_usuario  FOREIGN KEY (tutor_id)    REFERENCES usuarios  (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ----------------------------------------------------------------
+-- TABLA: notas_finales  (RF-08-04 — nota final del Coordinador)
+-- ----------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS notas_finales (
+    id              BIGINT      NOT NULL AUTO_INCREMENT,
+    practica_id     BIGINT      NOT NULL,
+    coordinador_id  BIGINT      NOT NULL,
+    nota            DOUBLE      NOT NULL,
+    resultado       VARCHAR(20) NOT NULL,
+    observaciones   LONGTEXT             DEFAULT NULL,
+    cerrada         TINYINT(1)  NOT NULL DEFAULT 0,
+    cerrada_en      DATETIME             DEFAULT NULL,
+    creado_en       DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en  DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_nota_final_practica (practica_id),
+    KEY idx_nota_final_coord (coordinador_id),
+    CONSTRAINT fk_nota_final_practica FOREIGN KEY (practica_id)    REFERENCES practicas (id),
+    CONSTRAINT fk_nota_final_coord    FOREIGN KEY (coordinador_id) REFERENCES usuarios  (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ----------------------------------------------------------------
+-- TABLA: plantillas_notificacion  (RF-11-05 — plantillas configurables por evento)
+-- ----------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS plantillas_notificacion (
+    id                             BIGINT       NOT NULL AUTO_INCREMENT,
+    evento                         VARCHAR(60)  NOT NULL,
+    asunto                         VARCHAR(250) NOT NULL,
+    cuerpo_html                    LONGTEXT     NOT NULL,
+    rol_receptor                   VARCHAR(30)           DEFAULT NULL,
+    obligatorio                    TINYINT(1)   NOT NULL DEFAULT 0,
+    frecuencia_recordatorio_dias   INT          NOT NULL DEFAULT 3,
+    activa                         TINYINT(1)   NOT NULL DEFAULT 1,
+    creado_en                      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en                 DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_plantilla_evento (evento)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ----------------------------------------------------------------
+-- TABLA: encuestas  (RF-08-05 / RF-08-06 — una por (practica, tipo))
+-- ----------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS encuestas (
+    id                       BIGINT       NOT NULL AUTO_INCREMENT,
+    practica_id              BIGINT       NOT NULL,
+    tipo                     VARCHAR(40)  NOT NULL,
+    destinatario_id          BIGINT       NOT NULL,
+    estado                   VARCHAR(20)  NOT NULL DEFAULT 'PENDIENTE',
+    respuestas_json          LONGTEXT              DEFAULT NULL,
+    ultimo_recordatorio_en   DATETIME              DEFAULT NULL,
+    invitacion_enviada_en    DATETIME              DEFAULT NULL,
+    completada_en            DATETIME              DEFAULT NULL,
+    creado_en                DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en           DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_encuesta_practica_tipo (practica_id, tipo),
+    KEY idx_encuesta_estado       (estado),
+    KEY idx_encuesta_destinatario (destinatario_id),
+    CONSTRAINT fk_encuesta_practica     FOREIGN KEY (practica_id)     REFERENCES practicas (id),
+    CONSTRAINT fk_encuesta_destinatario FOREIGN KEY (destinatario_id) REFERENCES usuarios  (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
